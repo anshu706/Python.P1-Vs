@@ -1,6 +1,7 @@
 from tkinter import *
 from PIL import Image, ImageTk  # pip install pillow
-from tkinter import ttk
+from tkinter import ttk, messagebox
+import sqlite3
 
 
 class CourseClass:
@@ -48,7 +49,7 @@ class CourseClass:
 
         # ==== Buttons ====
         self.btn_add = Button(self.root, text='Save', font=(
-            "goudy old style", 15, "bold"), bg="#2196f3", fg="white", cursor="hand2")
+            "goudy old style", 15, "bold"), bg="#2196f3", fg="white", cursor="hand2", command=self.add)
         self.btn_add.place(x=150, y=400, width=110, height=40)
 
         self.btn_update = Button(self.root, text='Update', font=(
@@ -102,8 +103,54 @@ class CourseClass:
 
         self.CourseTable.pack(fill=BOTH, expand=1)
 
+# ===================================================================================================
+
+    def add(self):
+        con = sqlite3.connect(database="rms.db")
+        cur = con.cursor()
+        try:
+            if self.var_course.get() == "":
+                messagebox.showerror(
+                    "Error", "Course Name should be required", parent=self.root)
+            else:
+                cur.execute("select * from course where name=?",
+                            (self.var_course.get(),))
+                row = cur.fetchone()
+                if row != None:
+                    messagebox.showerror(
+                        "Error", "Course Name already present", parent=self.root)
+                else:
+                    cur.execute("Insert into course (name,duration,charges,description) values(?,?,?,?)", (
+                        self.var_course.get(),
+                        self.var_duration.get(),
+                        self.var_charges.get(),
+                        self.txt_description.get("1.0", END)
+                    ))
+                    con.commit()
+                    messagebox.showinfo(
+                        "Success", "Course Added Successfully", parent=self.root)
+
+        except Exception as ex:
+            messagebox.showerror("Error", f"Error due to {str(ex)}")
+
+    def show(self):
+        con = sqlite3.connect(database="rms.db")
+        cur = con.cursor()
+        try:
+            cur.execute("select * from course")
+            rows = cur.fetchall()
+            self.CourseTable.delete(*self.CourseTable.get_children())
+            for row in rows:
+                self.CourseTable.insert('', END, values=row)
+
+        except Exception as ex:
+            messagebox.showerror("Error", f"Error due to {str(ex)}")
+
 
 if __name__ == "__main__":
     root = Tk()
     obj = CourseClass(root)
     root.mainloop()
+
+# 18:49
+# Part - 3
