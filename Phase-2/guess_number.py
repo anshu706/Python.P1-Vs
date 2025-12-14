@@ -36,4 +36,4 @@ def computer_guess(x):
     print(f"Yay! The Computer guessed your number, {guess}, correctly!")
 
 
-computer_guess(10)
+guess(10)

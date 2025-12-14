@@ -4,10 +4,10 @@ menu = {
     'Pasta': 50,
     'Burger': 60,
     'Salad': 70,
-    'Coffee': 80,
+    'Coffee': 80
 }
 
-# Greet
+# Greetings
 print("Welcome To Python Restaurant")
 print(" Pizza: Rs40\n Pasta: Rs50\n Burger: Rs60\n Salad: Rs70\n Coffee: Rs80\n")
 
