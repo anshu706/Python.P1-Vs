@@ -1,0 +1,1279 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Python.P1 Unified Web Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Bebas+Neue&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-0: #f4f1e8;
+        --bg-1: #efe6d4;
+        --ink: #1d1a16;
+        --muted: #5f584d;
+        --panel: #fffaf0;
+        --line: #d2c5ad;
+        --accent-a: #d94f21;
+        --accent-b: #0b7a75;
+        --accent-c: #1f4a7c;
+        --ok: #2f9e44;
+        --bad: #c92a2a;
+        --shadow: 0 14px 32px rgba(35, 20, 6, 0.14);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Space Grotesk", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 10% 10%, #f7d9a3 0, transparent 38%),
+          radial-gradient(circle at 80% 20%, #b8dfd9 0, transparent 32%),
+          radial-gradient(circle at 30% 80%, #c4d8f0 0, transparent 28%),
+          linear-gradient(130deg, var(--bg-0), var(--bg-1));
+        min-height: 100vh;
+      }
+
+      .shell {
+        width: min(1180px, 96vw);
+        margin: 20px auto 32px;
+        display: grid;
+        gap: 14px;
+        grid-template-columns: 280px 1fr;
+      }
+
+      .left,
+      .right {
+        background: rgba(255, 250, 240, 0.86);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        backdrop-filter: blur(6px);
+        box-shadow: var(--shadow);
+      }
+
+      .left {
+        padding: 18px 14px;
+        position: sticky;
+        top: 16px;
+        height: calc(100vh - 42px);
+        overflow-y: auto;
+      }
+
+      .brand {
+        padding: 4px 6px 16px;
+        border-bottom: 1px solid var(--line);
+        margin-bottom: 12px;
+      }
+
+      .brand h1 {
+        font-family: "Bebas Neue", sans-serif;
+        letter-spacing: 0.06em;
+        margin: 0;
+        font-size: 40px;
+        line-height: 1;
+        color: var(--accent-c);
+      }
+
+      .brand p {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .group-label {
+        margin: 14px 8px 8px;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+
+      .nav-btn {
+        width: 100%;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        color: var(--ink);
+        border-radius: 10px;
+        padding: 10px 12px;
+        margin: 5px 0;
+        text-align: left;
+        font-size: 14px;
+        cursor: pointer;
+        transition:
+          transform 0.18s ease,
+          border-color 0.18s ease,
+          background 0.18s ease;
+      }
+
+      .nav-btn:hover {
+        transform: translateX(4px);
+        border-color: var(--accent-c);
+        background: #fffdf6;
+      }
+
+      .nav-btn.active {
+        border-color: var(--accent-a);
+        background: #fff4ea;
+        font-weight: 700;
+      }
+
+      .right {
+        padding: 16px;
+        min-height: 82vh;
+      }
+
+      .hero {
+        border: 1px dashed #cab78f;
+        border-radius: 14px;
+        padding: 16px;
+        background: linear-gradient(120deg, #fff4de, #f0fbf7);
+        margin-bottom: 14px;
+      }
+
+      .hero h2 {
+        margin: 0 0 6px;
+        font-family: "Bebas Neue", sans-serif;
+        letter-spacing: 0.06em;
+        font-size: 34px;
+        color: var(--accent-a);
+      }
+
+      .hero p {
+        margin: 0;
+        color: #3d372f;
+        font-size: 15px;
+      }
+
+      .panel {
+        display: none;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 14px;
+        background: #fffdf8;
+        animation: reveal 0.28s ease;
+      }
+
+      .panel.active {
+        display: block;
+      }
+
+      @keyframes reveal {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .title {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+      }
+
+      .title h3 {
+        margin: 0;
+        font-size: 24px;
+        color: var(--accent-c);
+      }
+
+      .chip {
+        font-size: 12px;
+        border-radius: 999px;
+        border: 1px solid #c9d8e7;
+        color: #295179;
+        background: #ebf4ff;
+        padding: 4px 9px;
+        font-weight: 700;
+      }
+
+      .row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin: 8px 0;
+      }
+
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px;
+        background: #fffaf1;
+        flex: 1 1 240px;
+      }
+
+      input,
+      select,
+      button,
+      textarea {
+        font-family: inherit;
+        font-size: 14px;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        border: 1px solid #cfc2a7;
+        border-radius: 8px;
+        padding: 8px;
+        background: #fffcf7;
+      }
+
+      button.action {
+        border: 0;
+        background: var(--accent-a);
+        color: #fff;
+        border-radius: 8px;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-weight: 700;
+      }
+
+      button.action.alt {
+        background: var(--accent-b);
+      }
+      button.action.cool {
+        background: var(--accent-c);
+      }
+
+      .result {
+        margin-top: 8px;
+        min-height: 20px;
+        font-weight: 700;
+      }
+
+      .grid-ttt {
+        width: 210px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+      }
+
+      .ttt {
+        height: 64px;
+        border: 1px solid #9bb4d0;
+        border-radius: 8px;
+        background: #edf6ff;
+        font-size: 28px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .todo-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        padding: 8px;
+        border: 1px solid #d7ccb4;
+        border-radius: 8px;
+        background: #fffef9;
+      }
+
+      .done {
+        text-decoration: line-through;
+        color: var(--muted);
+      }
+
+      .aim-box {
+        position: relative;
+        border: 1px dashed #c0b08b;
+        border-radius: 10px;
+        background: #fdf7ea;
+        width: 100%;
+        height: 260px;
+        overflow: hidden;
+      }
+
+      .target {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #ffe2d5, #de3b0f);
+        position: absolute;
+        cursor: pointer;
+        border: 2px solid #fff;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+      }
+
+      .mine-grid {
+        display: grid;
+        grid-template-columns: repeat(8, 34px);
+        gap: 4px;
+        margin-top: 8px;
+        width: max-content;
+      }
+
+      .mine-cell {
+        width: 34px;
+        height: 34px;
+        border-radius: 6px;
+        border: 1px solid #a9bfd7;
+        background: #eaf3fc;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .mine-cell.revealed {
+        background: #fff;
+        border-color: #cfbf9d;
+        cursor: default;
+      }
+
+      .slot {
+        font-size: 38px;
+        letter-spacing: 8px;
+        padding: 8px;
+        border-radius: 10px;
+        border: 1px solid #d3c4a5;
+        background: #fff6e3;
+        text-align: center;
+        width: 240px;
+      }
+
+      .sudoku {
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+
+      .sudoku input {
+        width: 36px;
+        height: 36px;
+        text-align: center;
+        border-radius: 0;
+        border: 1px solid #bcae92;
+        padding: 0;
+      }
+
+      .sudoku td:nth-child(3n) input {
+        border-right: 2px solid #7e7055;
+      }
+      .sudoku tr:nth-child(3n) td input {
+        border-bottom: 2px solid #7e7055;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      @media (max-width: 980px) {
+        .shell {
+          grid-template-columns: 1fr;
+        }
+        .left {
+          position: relative;
+          top: 0;
+          height: auto;
+          max-height: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="left">
+        <div class="brand">
+          <h1>Python.P1 Web</h1>
+          <p>One HTML dashboard for every Phase-1 and Phase-2 file.</p>
+        </div>
+        <div class="group-label">Phase Files</div>
+        <button class="nav-btn active" data-panel="home">
+          launcher.py / README.md
+        </button>
+        <button class="nav-btn" data-panel="phase1">Phase-1/phase1.py</button>
+        <button class="nav-btn" data-panel="phase2">Phase-2/phase2.py</button>
+
+        <div class="group-label">Phase-1 Apps</div>
+        <button class="nav-btn" data-panel="clock">clock.py</button>
+        <button class="nav-btn" data-panel="hotel">hotelmenu.py</button>
+        <button class="nav-btn" data-panel="rent">rent.py</button>
+        <button class="nav-btn" data-panel="rps">rock_paper_scissors.py</button>
+        <button class="nav-btn" data-panel="ttt">tic_tac_toe.py</button>
+        <button class="nav-btn" data-panel="todo">to_do.py</button>
+
+        <div class="group-label">Phase-2 Apps</div>
+        <button class="nav-btn" data-panel="aim">aim_trainer.py</button>
+        <button class="nav-btn" data-panel="guess">guess_number.py</button>
+        <button class="nav-btn" data-panel="mastermind">
+          mastermind_game.py
+        </button>
+        <button class="nav-btn" data-panel="mines">minesweeper.py</button>
+        <button class="nav-btn" data-panel="slot">slot_machine.py</button>
+        <button class="nav-btn" data-panel="sudoku">sudoku_solver.py</button>
+      </aside>
+
+      <main class="right">
+        <section class="hero">
+          <h2>Unified Project Console</h2>
+          <p>
+            This browser version mirrors your Python script collection in one
+            place. Open sections from the left to use each module.
+          </p>
+        </section>
+
+        <section class="panel active" id="home">
+          <div class="title">
+            <h3>Project Overview</h3>
+            <span class="chip">launcher.py + README.md</span>
+          </div>
+          <p>
+            Welcome to your all-in-one interface. This page acts like your
+            desktop launcher but inside a modern web layout.
+          </p>
+          <div class="row">
+            <div class="card">
+              <h4>Phase 1: Core Utility Arena</h4>
+              <p class="muted">
+                Utilities and fundamentals: clock, menu, rent split, simple
+                games, task manager.
+              </p>
+            </div>
+            <div class="card">
+              <h4>Phase 2: Puzzle and Logic Zone</h4>
+              <p class="muted">
+                Challenge-driven apps: reflex trainer, number logic, puzzle
+                solvers, and board games.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="phase1">
+          <div class="title">
+            <h3>Phase-1 Hub</h3>
+            <span class="chip">phase1.py</span>
+          </div>
+          <p>Use the left menu to open any Phase-1 app implementation.</p>
+        </section>
+
+        <section class="panel" id="phase2">
+          <div class="title">
+            <h3>Phase-2 Hub</h3>
+            <span class="chip">phase2.py</span>
+          </div>
+          <p>Use the left menu to open any Phase-2 app implementation.</p>
+        </section>
+
+        <section class="panel" id="clock">
+          <div class="title">
+            <h3>Live Clock</h3>
+            <span class="chip">clock.py</span>
+          </div>
+          <div class="card">
+            <div
+              id="clockReadout"
+              style="
+                font-size: 38px;
+                font-family: &quot;Bebas Neue&quot;, sans-serif;
+                letter-spacing: 0.06em;
+              "
+            >
+              --:--:--
+            </div>
+            <div id="clockDate" class="muted"></div>
+          </div>
+        </section>
+
+        <section class="panel" id="hotel">
+          <div class="title">
+            <h3>Hotel Menu Billing</h3>
+            <span class="chip">hotelmenu.py</span>
+          </div>
+          <div class="row">
+            <div class="card">
+              <label>Item</label>
+              <select id="hotelItem"></select>
+              <label style="margin-top: 8px; display: block">Quantity</label>
+              <input type="number" id="hotelQty" min="1" value="1" />
+              <div class="row" style="margin-top: 10px">
+                <button class="action" id="hotelAdd">Add Item</button>
+                <button class="action alt" id="hotelClear">Clear</button>
+              </div>
+            </div>
+            <div class="card">
+              <h4>Bill</h4>
+              <div id="hotelList" class="muted">No items added yet.</div>
+              <div class="result" id="hotelTotal">Total: 0</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="rent">
+          <div class="title">
+            <h3>Rent Split Calculator</h3>
+            <span class="chip">rent.py</span>
+          </div>
+          <div class="row">
+            <div class="card">
+              <label>Total Rent</label>
+              <input type="number" id="rentTotal" value="20000" />
+              <label style="margin-top: 8px; display: block"
+                >Total People</label
+              >
+              <input type="number" id="rentPeople" value="4" min="1" />
+              <button class="action" style="margin-top: 10px" id="rentCalc">
+                Calculate Share
+              </button>
+              <div class="result" id="rentResult"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="rps">
+          <div class="title">
+            <h3>Rock Paper Scissors</h3>
+            <span class="chip">rock_paper_scissors.py</span>
+          </div>
+          <div class="row">
+            <div class="card">
+              <div class="row">
+                <button class="action" data-rps="Rock">Rock</button>
+                <button class="action alt" data-rps="Paper">Paper</button>
+                <button class="action cool" data-rps="Scissors">
+                  Scissors
+                </button>
+              </div>
+              <div class="result" id="rpsResult"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="ttt">
+          <div class="title">
+            <h3>Tic Tac Toe</h3>
+            <span class="chip">tic_tac_toe.py</span>
+          </div>
+          <div class="row">
+            <div class="card">
+              <div class="grid-ttt" id="tttGrid"></div>
+              <div class="result" id="tttStatus">Turn: X</div>
+              <button class="action" id="tttReset">Reset</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="todo">
+          <div class="title">
+            <h3>To-Do Manager</h3>
+            <span class="chip">to_do.py</span>
+          </div>
+          <div class="row">
+            <div class="card">
+              <label>Task</label>
+              <input id="todoInput" placeholder="Enter task" />
+              <button class="action" style="margin-top: 8px" id="todoAdd">
+                Add Task
+              </button>
+              <div id="todoList"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="aim">
+          <div class="title">
+            <h3>Aim Trainer</h3>
+            <span class="chip">aim_trainer.py</span>
+          </div>
+          <div class="row">
+            <div class="card">
+              <div class="row">
+                <button class="action" id="aimStart">Start 15s Round</button>
+                <div id="aimInfo" class="muted">Score: 0 | Time: 15</div>
+              </div>
+              <div class="aim-box" id="aimBox"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="guess">
+          <div class="title">
+            <h3>Guess Number</h3>
+            <span class="chip">guess_number.py</span>
+          </div>
+          <div class="row">
+            <div class="card">
+              <p class="muted">Guess a number from 1 to 100.</p>
+              <input type="number" id="guessInput" />
+              <button class="action" style="margin-top: 8px" id="guessBtn">
+                Submit Guess
+              </button>
+              <div class="result" id="guessResult"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="mastermind">
+          <div class="title">
+            <h3>Mastermind</h3>
+            <span class="chip">mastermind_game.py</span>
+          </div>
+          <div class="row">
+            <div class="card">
+              <p class="muted">
+                Guess 4 digits, each from 1-6 (example: 1234).
+              </p>
+              <input id="mmInput" maxlength="4" placeholder="1234" />
+              <button class="action" style="margin-top: 8px" id="mmGuess">
+                Guess
+              </button>
+              <div class="result" id="mmResult"></div>
+              <div id="mmHistory" class="muted"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="mines">
+          <div class="title">
+            <h3>Minesweeper 8x8</h3>
+            <span class="chip">minesweeper.py</span>
+          </div>
+          <div class="row">
+            <div class="card">
+              <button class="action" id="mineReset">New Board</button>
+              <div class="result" id="mineStatus"></div>
+              <div class="mine-grid" id="mineGrid"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="slot">
+          <div class="title">
+            <h3>Slot Machine</h3>
+            <span class="chip">slot_machine.py</span>
+          </div>
+          <div class="row">
+            <div class="card">
+              <div>Balance: <strong id="slotBalance">100</strong></div>
+              <label style="margin-top: 8px; display: block">Bet Amount</label>
+              <input type="number" id="slotBet" value="10" min="1" />
+              <button class="action" style="margin-top: 8px" id="slotSpin">
+                Spin
+              </button>
+              <div class="slot" id="slotReels">- - -</div>
+              <div class="result" id="slotResult"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="sudoku">
+          <div class="title">
+            <h3>Sudoku Solver</h3>
+            <span class="chip">sudoku_solver.py</span>
+          </div>
+          <div class="row">
+            <div class="card">
+              <p class="muted">
+                Fill digits 1-9. Leave blanks as empty. Then solve.
+              </p>
+              <table class="sudoku" id="sudokuGrid"></table>
+              <div class="row">
+                <button class="action" id="sudokuSolve">Solve</button>
+                <button class="action alt" id="sudokuDemo">Load Demo</button>
+                <button class="action cool" id="sudokuClear">Clear</button>
+              </div>
+              <div class="result" id="sudokuStatus"></div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const navButtons = Array.from(document.querySelectorAll(".nav-btn"));
+      const panels = Array.from(document.querySelectorAll(".panel"));
+
+      navButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          navButtons.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          const target = btn.dataset.panel;
+          panels.forEach((p) => p.classList.toggle("active", p.id === target));
+        });
+      });
+
+      // Clock
+      const clockReadout = document.getElementById("clockReadout");
+      const clockDate = document.getElementById("clockDate");
+      function tickClock() {
+        const now = new Date();
+        clockReadout.textContent = now.toLocaleTimeString();
+        clockDate.textContent = now.toDateString();
+      }
+      setInterval(tickClock, 1000);
+      tickClock();
+
+      // Hotel menu billing
+      const menuItems = {
+        Tea: 20,
+        Coffee: 30,
+        Sandwich: 70,
+        Burger: 120,
+        Pizza: 180,
+        Pasta: 150,
+        "Ice Cream": 80,
+      };
+      const hotelItem = document.getElementById("hotelItem");
+      const hotelQty = document.getElementById("hotelQty");
+      const hotelAdd = document.getElementById("hotelAdd");
+      const hotelClear = document.getElementById("hotelClear");
+      const hotelList = document.getElementById("hotelList");
+      const hotelTotal = document.getElementById("hotelTotal");
+      const bill = [];
+
+      Object.entries(menuItems).forEach(([item, price]) => {
+        const opt = document.createElement("option");
+        opt.value = item;
+        opt.textContent = `${item} - ${price}`;
+        hotelItem.appendChild(opt);
+      });
+
+      function renderBill() {
+        if (!bill.length) {
+          hotelList.textContent = "No items added yet.";
+          hotelTotal.textContent = "Total: 0";
+          return;
+        }
+        hotelList.innerHTML = bill
+          .map((x) => `${x.item} x ${x.qty} = ${x.amount}`)
+          .join("<br>");
+        const total = bill.reduce((sum, x) => sum + x.amount, 0);
+        hotelTotal.textContent = `Total: ${total}`;
+      }
+
+      hotelAdd.addEventListener("click", () => {
+        const item = hotelItem.value;
+        const qty = Number(hotelQty.value || 0);
+        if (qty < 1) return;
+        bill.push({ item, qty, amount: qty * menuItems[item] });
+        renderBill();
+      });
+
+      hotelClear.addEventListener("click", () => {
+        bill.length = 0;
+        renderBill();
+      });
+
+      // Rent calculator
+      document.getElementById("rentCalc").addEventListener("click", () => {
+        const total = Number(document.getElementById("rentTotal").value || 0);
+        const people = Number(document.getElementById("rentPeople").value || 0);
+        const out = document.getElementById("rentResult");
+        if (total <= 0 || people <= 0) {
+          out.textContent = "Enter valid rent and people count.";
+          out.style.color = "var(--bad)";
+          return;
+        }
+        out.textContent = `Each person pays: ${(total / people).toFixed(2)}`;
+        out.style.color = "var(--ok)";
+      });
+
+      // Rock Paper Scissors
+      const rpsMap = ["Rock", "Paper", "Scissors"];
+      const rpsResult = document.getElementById("rpsResult");
+      document.querySelectorAll("[data-rps]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const player = btn.dataset.rps;
+          const cpu = rpsMap[Math.floor(Math.random() * 3)];
+          let result = "Draw";
+          if (
+            (player === "Rock" && cpu === "Scissors") ||
+            (player === "Paper" && cpu === "Rock") ||
+            (player === "Scissors" && cpu === "Paper")
+          ) {
+            result = "You Win";
+          } else if (player !== cpu) {
+            result = "Computer Wins";
+          }
+          rpsResult.textContent = `You: ${player} | CPU: ${cpu} -> ${result}`;
+        });
+      });
+
+      // Tic Tac Toe
+      const tttGrid = document.getElementById("tttGrid");
+      const tttStatus = document.getElementById("tttStatus");
+      let tttBoard = Array(9).fill("");
+      let tttTurn = "X";
+      let tttDone = false;
+      const wins = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6],
+      ];
+
+      function tttRender() {
+        tttGrid.innerHTML = "";
+        tttBoard.forEach((cell, i) => {
+          const b = document.createElement("button");
+          b.className = "ttt";
+          b.textContent = cell;
+          b.addEventListener("click", () => {
+            if (tttDone || tttBoard[i]) return;
+            tttBoard[i] = tttTurn;
+            if (tttCheck(tttTurn)) {
+              tttStatus.textContent = `Winner: ${tttTurn}`;
+              tttDone = true;
+            } else if (tttBoard.every(Boolean)) {
+              tttStatus.textContent = "Draw";
+              tttDone = true;
+            } else {
+              tttTurn = tttTurn === "X" ? "O" : "X";
+              tttStatus.textContent = `Turn: ${tttTurn}`;
+            }
+            tttRender();
+          });
+          tttGrid.appendChild(b);
+        });
+      }
+
+      function tttCheck(mark) {
+        return wins.some((w) => w.every((idx) => tttBoard[idx] === mark));
+      }
+
+      document.getElementById("tttReset").addEventListener("click", () => {
+        tttBoard = Array(9).fill("");
+        tttTurn = "X";
+        tttDone = false;
+        tttStatus.textContent = "Turn: X";
+        tttRender();
+      });
+      tttRender();
+
+      // To-do
+      const todoInput = document.getElementById("todoInput");
+      const todoList = document.getElementById("todoList");
+      const todos = [];
+
+      function renderTodos() {
+        todoList.innerHTML = "";
+        todos.forEach((todo, idx) => {
+          const div = document.createElement("div");
+          div.className = "todo-item";
+
+          const cb = document.createElement("input");
+          cb.type = "checkbox";
+          cb.checked = todo.done;
+          cb.style.width = "auto";
+          cb.addEventListener("change", () => {
+            todo.done = cb.checked;
+            renderTodos();
+          });
+
+          const txt = document.createElement("span");
+          txt.textContent = todo.text;
+          if (todo.done) txt.className = "done";
+
+          const del = document.createElement("button");
+          del.className = "action cool";
+          del.textContent = "Delete";
+          del.addEventListener("click", () => {
+            todos.splice(idx, 1);
+            renderTodos();
+          });
+
+          div.appendChild(cb);
+          div.appendChild(txt);
+          div.appendChild(del);
+          todoList.appendChild(div);
+        });
+      }
+
+      document.getElementById("todoAdd").addEventListener("click", () => {
+        const text = todoInput.value.trim();
+        if (!text) return;
+        todos.push({ text, done: false });
+        todoInput.value = "";
+        renderTodos();
+      });
+
+      // Aim trainer
+      const aimBox = document.getElementById("aimBox");
+      const aimInfo = document.getElementById("aimInfo");
+      let aimScore = 0;
+      let aimTime = 15;
+      let aimTimer = null;
+
+      function spawnTarget() {
+        aimBox.innerHTML = "";
+        const t = document.createElement("div");
+        t.className = "target";
+        const maxX = Math.max(0, aimBox.clientWidth - 40);
+        const maxY = Math.max(0, aimBox.clientHeight - 40);
+        t.style.left = `${Math.floor(Math.random() * maxX)}px`;
+        t.style.top = `${Math.floor(Math.random() * maxY)}px`;
+        t.addEventListener("click", () => {
+          aimScore += 1;
+          aimInfo.textContent = `Score: ${aimScore} | Time: ${aimTime}`;
+          spawnTarget();
+        });
+        aimBox.appendChild(t);
+      }
+
+      document.getElementById("aimStart").addEventListener("click", () => {
+        clearInterval(aimTimer);
+        aimScore = 0;
+        aimTime = 15;
+        aimInfo.textContent = `Score: ${aimScore} | Time: ${aimTime}`;
+        spawnTarget();
+        aimTimer = setInterval(() => {
+          aimTime -= 1;
+          aimInfo.textContent = `Score: ${aimScore} | Time: ${aimTime}`;
+          if (aimTime <= 0) {
+            clearInterval(aimTimer);
+            aimBox.innerHTML = "";
+            aimInfo.textContent = `Round over. Final Score: ${aimScore}`;
+          }
+        }, 1000);
+      });
+
+      // Guess number
+      let secret = Math.floor(Math.random() * 100) + 1;
+      let guessTries = 0;
+      document.getElementById("guessBtn").addEventListener("click", () => {
+        const val = Number(document.getElementById("guessInput").value || 0);
+        const out = document.getElementById("guessResult");
+        guessTries += 1;
+        if (val === secret) {
+          out.textContent = `Correct. You guessed it in ${guessTries} tries. New number generated.`;
+          out.style.color = "var(--ok)";
+          secret = Math.floor(Math.random() * 100) + 1;
+          guessTries = 0;
+        } else if (val < secret) {
+          out.textContent = "Too low.";
+          out.style.color = "";
+        } else {
+          out.textContent = "Too high.";
+          out.style.color = "";
+        }
+      });
+
+      // Mastermind
+      const mmResult = document.getElementById("mmResult");
+      const mmHistory = document.getElementById("mmHistory");
+      const mmInput = document.getElementById("mmInput");
+      let mmSecret = Array.from({ length: 4 }, () =>
+        String(Math.floor(Math.random() * 6) + 1),
+      );
+
+      document.getElementById("mmGuess").addEventListener("click", () => {
+        const guess = mmInput.value.trim().split("");
+        if (guess.length !== 4 || guess.some((d) => !/[1-6]/.test(d))) {
+          mmResult.textContent = "Enter exactly 4 digits between 1 and 6.";
+          mmResult.style.color = "var(--bad)";
+          return;
+        }
+        let exact = 0;
+        let partial = 0;
+        const secCopy = [...mmSecret];
+        const gCopy = [...guess];
+        for (let i = 0; i < 4; i++) {
+          if (gCopy[i] === secCopy[i]) {
+            exact += 1;
+            secCopy[i] = null;
+            gCopy[i] = null;
+          }
+        }
+        for (let i = 0; i < 4; i++) {
+          if (!gCopy[i]) continue;
+          const idx = secCopy.indexOf(gCopy[i]);
+          if (idx !== -1) {
+            partial += 1;
+            secCopy[idx] = null;
+          }
+        }
+        mmResult.textContent = `Exact: ${exact}, Partial: ${partial}`;
+        mmResult.style.color = exact === 4 ? "var(--ok)" : "";
+        mmHistory.innerHTML += `${guess.join("")} -> Exact ${exact}, Partial ${partial}<br>`;
+        if (exact === 4) {
+          mmHistory.innerHTML += "You cracked it. New code generated.<br>";
+          mmSecret = Array.from({ length: 4 }, () =>
+            String(Math.floor(Math.random() * 6) + 1),
+          );
+        }
+        mmInput.value = "";
+      });
+
+      // Minesweeper
+      const mineGrid = document.getElementById("mineGrid");
+      const mineStatus = document.getElementById("mineStatus");
+      const SIZE = 8;
+      const MINES = 10;
+      let board = [];
+      let revealed = 0;
+      let mineOver = false;
+
+      function makeBoard() {
+        board = Array.from({ length: SIZE }, () =>
+          Array.from({ length: SIZE }, () => ({
+            mine: false,
+            count: 0,
+            open: false,
+          })),
+        );
+        revealed = 0;
+        mineOver = false;
+        let placed = 0;
+        while (placed < MINES) {
+          const r = Math.floor(Math.random() * SIZE);
+          const c = Math.floor(Math.random() * SIZE);
+          if (!board[r][c].mine) {
+            board[r][c].mine = true;
+            placed += 1;
+          }
+        }
+        for (let r = 0; r < SIZE; r++) {
+          for (let c = 0; c < SIZE; c++) {
+            if (board[r][c].mine) continue;
+            board[r][c].count = neighbors(r, c).filter(
+              ([nr, nc]) => board[nr][nc].mine,
+            ).length;
+          }
+        }
+        renderMines();
+        mineStatus.textContent = "Find all safe cells.";
+      }
+
+      function neighbors(r, c) {
+        const out = [];
+        for (let dr = -1; dr <= 1; dr++) {
+          for (let dc = -1; dc <= 1; dc++) {
+            if (dr === 0 && dc === 0) continue;
+            const nr = r + dr;
+            const nc = c + dc;
+            if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE)
+              out.push([nr, nc]);
+          }
+        }
+        return out;
+      }
+
+      function openCell(r, c) {
+        const cell = board[r][c];
+        if (cell.open || mineOver) return;
+        cell.open = true;
+        revealed += 1;
+        if (cell.mine) {
+          mineOver = true;
+          mineStatus.textContent = "Boom. You hit a mine.";
+          revealAllMines();
+          renderMines();
+          return;
+        }
+        if (cell.count === 0) {
+          neighbors(r, c).forEach(([nr, nc]) => {
+            if (!board[nr][nc].open) openCell(nr, nc);
+          });
+        }
+        if (revealed === SIZE * SIZE - MINES) {
+          mineOver = true;
+          mineStatus.textContent = "You cleared the board.";
+        }
+        renderMines();
+      }
+
+      function revealAllMines() {
+        for (let r = 0; r < SIZE; r++) {
+          for (let c = 0; c < SIZE; c++) {
+            if (board[r][c].mine) board[r][c].open = true;
+          }
+        }
+      }
+
+      function renderMines() {
+        mineGrid.innerHTML = "";
+        for (let r = 0; r < SIZE; r++) {
+          for (let c = 0; c < SIZE; c++) {
+            const cell = board[r][c];
+            const b = document.createElement("button");
+            b.className = "mine-cell";
+            if (cell.open) {
+              b.classList.add("revealed");
+              if (cell.mine) b.textContent = "X";
+              else if (cell.count) b.textContent = String(cell.count);
+            }
+            b.addEventListener("click", () => openCell(r, c));
+            mineGrid.appendChild(b);
+          }
+        }
+      }
+
+      document.getElementById("mineReset").addEventListener("click", makeBoard);
+      makeBoard();
+
+      // Slot machine
+      const symbols = ["A", "B", "C", "D", "7"];
+      let balance = 100;
+      const slotBalance = document.getElementById("slotBalance");
+      const slotBet = document.getElementById("slotBet");
+      const slotReels = document.getElementById("slotReels");
+      const slotResult = document.getElementById("slotResult");
+
+      document.getElementById("slotSpin").addEventListener("click", () => {
+        const bet = Number(slotBet.value || 0);
+        if (bet <= 0 || bet > balance) {
+          slotResult.textContent = "Invalid bet.";
+          slotResult.style.color = "var(--bad)";
+          return;
+        }
+        const draw = Array.from(
+          { length: 3 },
+          () => symbols[Math.floor(Math.random() * symbols.length)],
+        );
+        slotReels.textContent = draw.join(" ");
+        balance -= bet;
+        if (draw[0] === draw[1] && draw[1] === draw[2]) {
+          const win = bet * 5;
+          balance += win;
+          slotResult.textContent = `Jackpot. You won ${win}.`;
+          slotResult.style.color = "var(--ok)";
+        } else if (
+          draw[0] === draw[1] ||
+          draw[1] === draw[2] ||
+          draw[0] === draw[2]
+        ) {
+          const win = bet * 2;
+          balance += win;
+          slotResult.textContent = `Pair match. You won ${win}.`;
+          slotResult.style.color = "var(--ok)";
+        } else {
+          slotResult.textContent = "No match. Try again.";
+          slotResult.style.color = "";
+        }
+        slotBalance.textContent = String(balance);
+        if (balance <= 0) {
+          slotResult.textContent = "Balance zero. Reset page to restart.";
+        }
+      });
+
+      // Sudoku solver
+      const sudokuGrid = document.getElementById("sudokuGrid");
+      const sudokuStatus = document.getElementById("sudokuStatus");
+
+      function buildSudokuGrid() {
+        sudokuGrid.innerHTML = "";
+        for (let r = 0; r < 9; r++) {
+          const tr = document.createElement("tr");
+          for (let c = 0; c < 9; c++) {
+            const td = document.createElement("td");
+            const input = document.createElement("input");
+            input.maxLength = 1;
+            input.dataset.r = String(r);
+            input.dataset.c = String(c);
+            input.addEventListener("input", () => {
+              input.value = input.value.replace(/[^1-9]/g, "");
+            });
+            td.appendChild(input);
+            tr.appendChild(td);
+          }
+          sudokuGrid.appendChild(tr);
+        }
+      }
+
+      function readSudoku() {
+        const grid = Array.from({ length: 9 }, () => Array(9).fill(0));
+        sudokuGrid.querySelectorAll("input").forEach((inp) => {
+          const r = Number(inp.dataset.r);
+          const c = Number(inp.dataset.c);
+          grid[r][c] = Number(inp.value || 0);
+        });
+        return grid;
+      }
+
+      function writeSudoku(grid) {
+        sudokuGrid.querySelectorAll("input").forEach((inp) => {
+          const r = Number(inp.dataset.r);
+          const c = Number(inp.dataset.c);
+          inp.value = grid[r][c] ? String(grid[r][c]) : "";
+        });
+      }
+
+      function valid(grid, row, col, val) {
+        for (let i = 0; i < 9; i++) {
+          if (grid[row][i] === val || grid[i][col] === val) return false;
+        }
+        const sr = Math.floor(row / 3) * 3;
+        const sc = Math.floor(col / 3) * 3;
+        for (let r = sr; r < sr + 3; r++) {
+          for (let c = sc; c < sc + 3; c++) {
+            if (grid[r][c] === val) return false;
+          }
+        }
+        return true;
+      }
+
+      function solveSudoku(grid) {
+        for (let r = 0; r < 9; r++) {
+          for (let c = 0; c < 9; c++) {
+            if (grid[r][c] === 0) {
+              for (let n = 1; n <= 9; n++) {
+                if (valid(grid, r, c, n)) {
+                  grid[r][c] = n;
+                  if (solveSudoku(grid)) return true;
+                  grid[r][c] = 0;
+                }
+              }
+              return false;
+            }
+          }
+        }
+        return true;
+      }
+
+      document.getElementById("sudokuSolve").addEventListener("click", () => {
+        const g = readSudoku();
+        const ok = solveSudoku(g);
+        if (ok) {
+          writeSudoku(g);
+          sudokuStatus.textContent = "Solved.";
+          sudokuStatus.style.color = "var(--ok)";
+        } else {
+          sudokuStatus.textContent = "No valid solution found.";
+          sudokuStatus.style.color = "var(--bad)";
+        }
+      });
+
+      document.getElementById("sudokuClear").addEventListener("click", () => {
+        buildSudokuGrid();
+        sudokuStatus.textContent = "";
+      });
+
+      document.getElementById("sudokuDemo").addEventListener("click", () => {
+        const demo = [
+          [5, 3, 0, 0, 7, 0, 0, 0, 0],
+          [6, 0, 0, 1, 9, 5, 0, 0, 0],
+          [0, 9, 8, 0, 0, 0, 0, 6, 0],
+          [8, 0, 0, 0, 6, 0, 0, 0, 3],
+          [4, 0, 0, 8, 0, 3, 0, 0, 1],
+          [7, 0, 0, 0, 2, 0, 0, 0, 6],
+          [0, 6, 0, 0, 0, 0, 2, 8, 0],
+          [0, 0, 0, 4, 1, 9, 0, 0, 5],
+          [0, 0, 0, 0, 8, 0, 0, 7, 9],
+        ];
+        writeSudoku(demo);
+        sudokuStatus.textContent = "Demo puzzle loaded.";
+        sudokuStatus.style.color = "";
+      });
+
+      buildSudokuGrid();
+    </script>
+  </body>
+</html>
