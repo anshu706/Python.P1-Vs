@@ -45,7 +45,8 @@ class TodoFrontendApp:
         backdrop.create_oval(340, 390, 1060, 1020, fill="#102949", outline="")
 
         shell = tk.Frame(self.root, bg=self.palette["bg"])
-        shell.place(relx=0.5, rely=0.5, anchor="center", relwidth=0.93, relheight=0.9)
+        shell.place(relx=0.5, rely=0.5, anchor="center",
+                    relwidth=0.93, relheight=0.9)
 
         header = tk.Frame(shell, bg=self.palette["bg"])
         header.pack(fill="x", pady=(0, 14))
@@ -70,9 +71,12 @@ class TodoFrontendApp:
         stats_row = tk.Frame(shell, bg=self.palette["bg"])
         stats_row.pack(fill="x", pady=(0, 16))
 
-        self.total_value = self._stat_card(stats_row, "TOTAL", "0", self.palette["secondary"])
-        self.done_value = self._stat_card(stats_row, "DONE", "0", self.palette["primary"])
-        self.pending_value = self._stat_card(stats_row, "PENDING", "0", self.palette["danger"])
+        self.total_value = self._stat_card(
+            stats_row, "TOTAL", "0", self.palette["secondary"])
+        self.done_value = self._stat_card(
+            stats_row, "DONE", "0", self.palette["primary"])
+        self.pending_value = self._stat_card(
+            stats_row, "PENDING", "0", self.palette["danger"])
 
         body = tk.Frame(shell, bg=self.palette["bg"])
         body.pack(fill="both", expand=True)
@@ -113,7 +117,8 @@ class TodoFrontendApp:
             relief="flat",
             bd=0,
         )
-        self.task_entry.pack(side="left", fill="x", expand=True, ipady=10, padx=(0, 8))
+        self.task_entry.pack(side="left", fill="x",
+                             expand=True, ipady=10, padx=(0, 8))
         self.task_entry.bind("<Return>", lambda _: self.add_task())
 
         add_button = self._action_button(
@@ -137,7 +142,8 @@ class TodoFrontendApp:
             command=self.update_task,
             text_color=self.palette["text"],
         )
-        update_button.pack(side="left", fill="x", expand=True, padx=(0, 6), ipady=8)
+        update_button.pack(side="left", fill="x",
+                           expand=True, padx=(0, 6), ipady=8)
 
         done_button = self._action_button(
             button_row,
@@ -157,7 +163,8 @@ class TodoFrontendApp:
             command=self.delete_task,
             text_color=self.palette["text"],
         )
-        delete_button.pack(side="left", fill="x", expand=True, padx=(6, 0), ipady=8)
+        delete_button.pack(side="left", fill="x",
+                           expand=True, padx=(6, 0), ipady=8)
 
         self.task_list = tk.Listbox(
             left,
@@ -314,7 +321,8 @@ class TodoFrontendApp:
     def add_task(self) -> None:
         text = self.task_entry.get().strip()
         if not text:
-            messagebox.showwarning("Missing task", "Please enter a task first.")
+            messagebox.showwarning(
+                "Missing task", "Please enter a task first.")
             return
         self.tasks.append({"text": text, "done": False})
         self.task_entry.delete(0, "end")
@@ -333,18 +341,21 @@ class TodoFrontendApp:
 
     def update_task(self) -> None:
         if self.selected_index is None:
-            messagebox.showinfo("Select task", "Select a task from the list to update.")
+            messagebox.showinfo(
+                "Select task", "Select a task from the list to update.")
             return
         new_text = self.task_entry.get().strip()
         if not new_text:
-            messagebox.showwarning("Missing text", "Task text cannot be empty.")
+            messagebox.showwarning(
+                "Missing text", "Task text cannot be empty.")
             return
         self.tasks[self.selected_index]["text"] = new_text
         self._refresh_tasks()
 
     def toggle_done(self) -> None:
         if self.selected_index is None:
-            messagebox.showinfo("Select task", "Select a task to toggle status.")
+            messagebox.showinfo(
+                "Select task", "Select a task to toggle status.")
             return
         current = bool(self.tasks[self.selected_index]["done"])
         self.tasks[self.selected_index]["done"] = not current
@@ -362,7 +373,8 @@ class TodoFrontendApp:
     def clear_all(self) -> None:
         if not self.tasks:
             return
-        ok = messagebox.askyesno("Clear all", "Delete all tasks from your board?")
+        ok = messagebox.askyesno(
+            "Clear all", "Delete all tasks from your board?")
         if not ok:
             return
         self.tasks.clear()
