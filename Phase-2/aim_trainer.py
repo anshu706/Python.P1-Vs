@@ -9,7 +9,7 @@ WIDTH, HEIGHT = 800, 600
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Aim Trainer")
 
-TARGET_INCREMENT = 400
+TARGET_INCREMENT = 800
 TARGET_EVENT = pygame.USEREVENT
 
 TARGET_PADDING = 30
@@ -101,18 +101,27 @@ def end_screen(win, elapsed_time, targets_pressed, clicks):
     accuracy = round(targets_pressed / clicks * 100, 1)
     accuracy_label = LABEL_FONT.render(f"Accuracy: {accuracy}%", 1, "white")
 
+    restart_label = LABEL_FONT.render(
+        "Press R to Restart or Q to Quit", 1, "yellow")
+
     win.blit(time_label, (get_middle(time_label), 100))
     win.blit(speed_label, (get_middle(speed_label), 200))
     win.blit(hits_label, (get_middle(hits_label), 300))
     win.blit(accuracy_label, (get_middle(accuracy_label), 400))
+    win.blit(restart_label, (get_middle(restart_label), 500))
 
     pygame.display.update()
 
     run = True
     while run:
         for event in pygame.event.get():
-            if event.type == pygame.QUIT or event.type == pygame.KEYDOWN:
-                quit()
+            if event.type == pygame.QUIT:
+                return False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_r:
+                    return True
+                elif event.key == pygame.K_q:
+                    return False
 
 
 def get_middle(surface):
@@ -120,56 +129,61 @@ def get_middle(surface):
 
 
 def main():
-    run = True
-    targets = []
-    clock = pygame.time.Clock()
+    play_again = True
+    while play_again:
+        run = True
+        targets = []
+        clock = pygame.time.Clock()
 
-    targets_pressed = 0
-    clicks = 0
-    misses = 0
-    start_time = time.time()
+        targets_pressed = 0
+        clicks = 0
+        misses = 0
+        start_time = time.time()
 
-    pygame.time.set_timer(TARGET_EVENT, TARGET_INCREMENT)
+        pygame.time.set_timer(TARGET_EVENT, TARGET_INCREMENT)
 
-    while run:
-        clock.tick(60)
-        click = False
-        mouse_pos = pygame.mouse.get_pos()
-        elapsed_time = time.time() - start_time
+        while run:
+            clock.tick(60)
+            click = False
+            mouse_pos = pygame.mouse.get_pos()
+            elapsed_time = time.time() - start_time
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    play_again = False
+                    run = False
+                    break
+
+                if event.type == TARGET_EVENT:
+                    x = random.randint(TARGET_PADDING, WIDTH - TARGET_PADDING)
+                    y = random.randint(
+                        TARGET_PADDING + TOP_BAR_HEIGHT, HEIGHT - TARGET_PADDING)
+                    target = Target(x, y)
+                    targets.append(target)
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    click = True
+                    clicks += 1
+
+            for target in targets:
+                target.update()
+
+                if target.size <= 0:
+                    targets.remove(target)
+                    misses += 1
+
+                if click and target.collide(*mouse_pos):
+                    targets.remove(target)
+                    targets_pressed += 1
+
+            if misses >= LIVES:
+                play_again = end_screen(
+                    WIN, elapsed_time, targets_pressed, clicks)
                 run = False
-                break
 
-            if event.type == TARGET_EVENT:
-                x = random.randint(TARGET_PADDING, WIDTH - TARGET_PADDING)
-                y = random.randint(
-                    TARGET_PADDING + TOP_BAR_HEIGHT, HEIGHT - TARGET_PADDING)
-                target = Target(x, y)
-                targets.append(target)
-
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                click = True
-                clicks += 1
-
-        for target in targets:
-            target.update()
-
-            if target.size <= 0:
-                targets.remove(target)
-                misses += 1
-
-            if click and target.collide(*mouse_pos):
-                targets.remove(target)
-                targets_pressed += 1
-
-        if misses >= LIVES:
-            end_screen(WIN, elapsed_time, targets_pressed, clicks)
-
-        draw(WIN, targets)
-        draw_top_bar(WIN, elapsed_time, targets_pressed, misses)
-        pygame.display.update()
+            draw(WIN, targets)
+            draw_top_bar(WIN, elapsed_time, targets_pressed, misses)
+            pygame.display.update()
 
     pygame.quit()
 
