@@ -515,21 +515,59 @@
 
         <section class="panel" id="rent">
           <div class="title">
-            <h3>Rent Split Calculator</h3>
+            <h3>Flat Expense Splitter</h3>
             <span class="chip">rent.py</span>
           </div>
           <div class="row">
             <div class="card">
-              <label>Total Rent</label>
-              <input type="number" id="rentTotal" value="20000" />
+              <h4>Expense Details</h4>
+              <label>Flat Rent</label>
+              <input type="number" id="rentTotal" value="0" min="0" />
               <label style="margin-top: 8px; display: block"
-                >Total People</label
+                >Food &amp; Groceries</label
               >
-              <input type="number" id="rentPeople" value="4" min="1" />
-              <button class="action" style="margin-top: 10px" id="rentCalc">
-                Calculate Share
-              </button>
-              <div class="result" id="rentResult"></div>
+              <input type="number" id="rentFood" value="0" min="0" />
+              <label style="margin-top: 8px; display: block"
+                >Electricity Units</label
+              >
+              <input type="number" id="rentUnits" value="0" min="0" />
+              <label style="margin-top: 8px; display: block"
+                >Rate Per Unit</label
+              >
+              <input type="number" id="rentRate" value="0" min="0" />
+              <label style="margin-top: 8px; display: block"
+                >Number of People</label
+              >
+              <input type="number" id="rentPeople" value="1" min="1" />
+              <div class="row" style="margin-top: 10px">
+                <button class="action" id="rentReset">Reset</button>
+                <button class="action cool" id="rentCopy">Copy Summary</button>
+              </div>
+            </div>
+            <div class="card">
+              <h4>Bill Breakdown</h4>
+              <div class="row" style="margin: 0; gap: 4px">
+                <div style="flex: 1 1 100%">
+                  Rent: <strong id="rentBreakRent">Rs 0.00</strong>
+                </div>
+                <div style="flex: 1 1 100%">
+                  Food &amp; Groceries:
+                  <strong id="rentBreakFood">Rs 0.00</strong>
+                </div>
+                <div style="flex: 1 1 100%">
+                  Electricity: <strong id="rentBreakElec">Rs 0.00</strong>
+                </div>
+                <div style="flex: 1 1 100%">
+                  Total Expenses: <strong id="rentBreakTotal">Rs 0.00</strong>
+                </div>
+              </div>
+              <div class="result" id="rentPerPerson" style="margin-top: 10px">
+                Per Person Share: Rs 0.00
+              </div>
+              <label style="margin-top: 10px; display: block"
+                >Receipt Summary</label
+              >
+              <textarea id="rentSummary" rows="11" readonly></textarea>
             </div>
           </div>
         </section>
@@ -768,19 +806,101 @@
         renderBill();
       });
 
-      // Rent calculator
-      document.getElementById("rentCalc").addEventListener("click", () => {
-        const total = Number(document.getElementById("rentTotal").value || 0);
-        const people = Number(document.getElementById("rentPeople").value || 0);
-        const out = document.getElementById("rentResult");
-        if (total <= 0 || people <= 0) {
-          out.textContent = "Enter valid rent and people count.";
-          out.style.color = "var(--bad)";
-          return;
-        }
-        out.textContent = `Each person pays: ${(total / people).toFixed(2)}`;
-        out.style.color = "var(--ok)";
+      // Rent splitter (full mode aligned with rent.py)
+      const rentTotalInput = document.getElementById("rentTotal");
+      const rentFoodInput = document.getElementById("rentFood");
+      const rentUnitsInput = document.getElementById("rentUnits");
+      const rentRateInput = document.getElementById("rentRate");
+      const rentPeopleInput = document.getElementById("rentPeople");
+      const rentBreakRent = document.getElementById("rentBreakRent");
+      const rentBreakFood = document.getElementById("rentBreakFood");
+      const rentBreakElec = document.getElementById("rentBreakElec");
+      const rentBreakTotal = document.getElementById("rentBreakTotal");
+      const rentPerPerson = document.getElementById("rentPerPerson");
+      const rentSummary = document.getElementById("rentSummary");
+      let rentCopyNotice = "";
+
+      function fmtRs(value) {
+        return `Rs ${Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      }
+
+      function updateRentSplitter() {
+        const rent = Number(rentTotalInput.value || 0);
+        const food = Number(rentFoodInput.value || 0);
+        const units = Number(rentUnitsInput.value || 0);
+        const rate = Number(rentRateInput.value || 0);
+        const peopleRaw = Number(rentPeopleInput.value || 0);
+        const people = peopleRaw > 0 ? peopleRaw : 1;
+
+        const totalElectricity = units * rate;
+        const totalBill = rent + food + totalElectricity;
+        const perPerson = totalBill / people;
+
+        rentBreakRent.textContent = fmtRs(rent);
+        rentBreakFood.textContent = fmtRs(food);
+        rentBreakElec.textContent = fmtRs(totalElectricity);
+        rentBreakTotal.textContent = fmtRs(totalBill);
+        rentPerPerson.textContent = `Per Person Share: ${fmtRs(perPerson)}${rentCopyNotice}`;
+        rentPerPerson.style.color = "var(--ok)";
+
+        const lines = [
+          "┌─────────────────────────────────────┐",
+          "│     FLAT EXPENSE RECEIPT            │",
+          "└─────────────────────────────────────┘",
+          "",
+          `  Rent Amount              Rs ${rent.toFixed(2).padStart(10, " ")}`,
+          `  Food & Groceries         Rs ${food.toFixed(2).padStart(10, " ")}`,
+          `  Electricity              Rs ${totalElectricity.toFixed(2).padStart(10, " ")}`,
+          `    (${units} units x Rs ${rate}/unit)`,
+          "",
+          "  ---------------------------------",
+          `  Total Amount             Rs ${totalBill.toFixed(2).padStart(10, " ")}`,
+          "  ---------------------------------",
+          "",
+          `  Number of People         ${Math.trunc(people).toString().padStart(13, " ")}`,
+          `  Amount Per Person        Rs ${perPerson.toFixed(2).padStart(10, " ")}`,
+          "",
+          "┌─────────────────────────────────────┐",
+        ];
+
+        rentSummary.value = lines.join("\n");
+      }
+
+      [
+        rentTotalInput,
+        rentFoodInput,
+        rentUnitsInput,
+        rentRateInput,
+        rentPeopleInput,
+      ].forEach((el) => el.addEventListener("input", updateRentSplitter));
+
+      document.getElementById("rentReset").addEventListener("click", () => {
+        rentTotalInput.value = "0";
+        rentFoodInput.value = "0";
+        rentUnitsInput.value = "0";
+        rentRateInput.value = "0";
+        rentPeopleInput.value = "0";
+        updateRentSplitter();
       });
+
+      document
+        .getElementById("rentCopy")
+        .addEventListener("click", async () => {
+          const text = rentSummary.value;
+          try {
+            await navigator.clipboard.writeText(text);
+            rentCopyNotice = " | Summary copied";
+            updateRentSplitter();
+          } catch (_err) {
+            rentSummary.focus();
+            rentSummary.select();
+            document.execCommand("copy");
+            rentCopyNotice = " | Summary copied";
+            updateRentSplitter();
+          }
+        });
+
+      updateRentSplitter();
 
       // Rock Paper Scissors
       const rpsMap = ["Rock", "Paper", "Scissors"];
