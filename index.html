@@ -351,20 +351,89 @@
         margin-top: 10px;
       }
 
-      .sudoku input {
-        width: 36px;
-        height: 36px;
-        text-align: center;
-        border-radius: 0;
-        border: 1px solid #bcae92;
-        padding: 0;
+      .grid-sudoku {
+        display: grid;
+        grid-template-columns: repeat(9, 1fr);
+        gap: 1px;
+        background: #7e7055;
+        border: 2px solid #7e7055;
+        width: 360px;
+        margin: 10px auto;
+      }
+      .sudoku-cell {
+        background: #fdf5e6;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-family: 'Courier New', monospace;
+        font-size: 18px;
+        cursor: default;
+      }
+      /* Thick borders for 3x3 blocks */
+      .sudoku-cell:nth-child(3n) { border-right: 2px solid #7e7055; }
+      .sudoku-cell:nth-child(9n) { border-right: none; }
+      .sudoku-cell:nth-child(n+19):nth-child(-n+27),
+      .sudoku-cell:nth-child(n+46):nth-child(-n+54) { border-bottom: 2px solid #7e7055; }
+
+      .mine-grid {
+        display: grid;
+        grid-template-columns: repeat(10, 32px);
+        gap: 2px;
+        margin-top: 10px;
+        justify-content: center;
+      }
+      .mine-cell {
+        width: 32px;
+        height: 32px;
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 14px;
+        user-select: none;
+        box-shadow: 0 0 5px rgba(0,0,0,0.2);
+      }
+      .mine-cell.revealed {
+        background: rgba(255,255,255,0.05);
+        color: var(--accent-b);
+        border: 1px solid var(--accent-b);
       }
 
-      .sudoku td:nth-child(3n) input {
-        border-right: 2px solid #7e7055;
+      .slot-reel {
+        width: 60px;
+        height: 80px;
+        background: #000;
+        border: 2px solid var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        font-weight: bold;
+        color: var(--ok);
+        text-shadow: 0 0 10px var(--ok);
+        border-radius: 8px;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
       }
-      .sudoku tr:nth-child(3n) td input {
-        border-bottom: 2px solid #7e7055;
+
+      .target {
+        width: 40px;
+        height: 40px;
+        background: var(--bad);
+        border: 4px solid #fff;
+        border-radius: 50%;
+        position: absolute;
+        cursor: crosshair;
+        animation: pulse 0.8s infinite alternate;
+      }
+      @keyframes pulse {
+        from { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,0,0,0.4); }
+        to { transform: scale(1.1); box-shadow: 0 0 20px 10px rgba(255,0,0,0); }
       }
 
       .muted {
@@ -491,24 +560,38 @@
 
         <section class="panel" id="hotel">
           <div class="title">
-            <h3>Hotel Menu Billing</h3>
+            <h3>Python Restaurant</h3>
             <span class="chip">hotelmenu.py</span>
           </div>
+          <p class="muted" style="margin:0 0 8px">Fresh picks. Fast billing. Clean vibes.</p>
           <div class="row">
             <div class="card">
-              <label>Item</label>
+              <h4>Menu</h4>
+              <div id="hotelMenuDisplay" class="muted" style="font-family:monospace;font-size:13px"></div>
+              <h4 style="margin-top:12px">Place Order</h4>
+              <label>Select Item</label>
               <select id="hotelItem"></select>
               <label style="margin-top: 8px; display: block">Quantity</label>
               <input type="number" id="hotelQty" min="1" value="1" />
               <div class="row" style="margin-top: 10px">
                 <button class="action" id="hotelAdd">Add Item</button>
-                <button class="action alt" id="hotelClear">Clear</button>
+                <button class="action alt" id="hotelRemoveLast">Remove Last</button>
               </div>
+              <h4 style="margin-top:12px">Order Summary</h4>
+              <div id="hotelList" class="muted" style="font-family:monospace;font-size:13px;min-height:60px;border:1px solid var(--line);border-radius:8px;padding:8px;background:#fffcf7">No items added yet.</div>
             </div>
             <div class="card">
-              <h4>Bill</h4>
-              <div id="hotelList" class="muted">No items added yet.</div>
-              <div class="result" id="hotelTotal">Total: 0</div>
+              <h4>Bill Section</h4>
+              <div style="margin:4px 0">Subtotal: <strong id="hotelSubtotal">Rs 0.00</strong></div>
+              <div style="margin:4px 0" class="muted">Tax (5%): <strong id="hotelTax">Rs 0.00</strong></div>
+              <div class="result" id="hotelGrand" style="font-size:18px;color:var(--accent-b)">Grand Total: Rs 0.00</div>
+              <label style="margin-top:10px;display:block">Bill Preview</label>
+              <textarea id="hotelBillPreview" rows="12" readonly style="font-family:monospace;font-size:12px"></textarea>
+              <div style="margin:4px 0">Live Total: <strong id="hotelLiveTotal">Rs 0</strong></div>
+              <div class="row" style="margin-top: 10px">
+                <button class="action cool" id="hotelCheckout">Checkout</button>
+                <button class="action alt" id="hotelClear">Clear Order</button>
+              </div>
             </div>
           </div>
         </section>
@@ -574,19 +657,41 @@
 
         <section class="panel" id="rps">
           <div class="title">
-            <h3>Rock Paper Scissors</h3>
+            <h3>Neon Arena – Rock Paper Scissors</h3>
             <span class="chip">rock_paper_scissors.py</span>
           </div>
+          <p class="muted" style="margin:0 0 8px">Pick your move and challenge the machine.</p>
           <div class="row">
-            <div class="card">
+            <div class="card" style="flex:2">
+              <div class="row" style="margin-bottom:6px">
+                <div style="flex:1;text-align:center;padding:6px;border:1px solid var(--line);border-radius:8px;background:#fffef9">
+                  <div class="muted" style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em">Player</div>
+                  <div style="font-size:22px;font-weight:700;color:var(--ok)" id="rpsPlayerScore">0</div>
+                </div>
+                <div style="flex:1;text-align:center;padding:6px;border:1px solid var(--line);border-radius:8px;background:#fffef9">
+                  <div class="muted" style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em">Computer</div>
+                  <div style="font-size:22px;font-weight:700;color:var(--bad)" id="rpsCompScore">0</div>
+                </div>
+                <div style="flex:1;text-align:center;padding:6px;border:1px solid var(--line);border-radius:8px;background:#fffef9">
+                  <div class="muted" style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em">Ties</div>
+                  <div style="font-size:22px;font-weight:700;color:var(--accent-a)" id="rpsTieScore">0</div>
+                </div>
+              </div>
+              <div id="rpsRoundBadge" class="muted" style="font-size:12px;margin-bottom:8px">ROUND 00</div>
               <div class="row">
                 <button class="action" data-rps="Rock">Rock</button>
                 <button class="action alt" data-rps="Paper">Paper</button>
-                <button class="action cool" data-rps="Scissors">
-                  Scissors
-                </button>
+                <button class="action cool" data-rps="Scissors">Scissors</button>
               </div>
-              <div class="result" id="rpsResult"></div>
+              <div class="result" id="rpsResult">Make your first move.</div>
+              <div class="muted" id="rpsRoundDetail">Your move: –  Computer: –</div>
+              <div class="row" style="margin-top:10px">
+                <button class="action" id="rpsReset" style="background:#5f584d">Reset Scores</button>
+              </div>
+            </div>
+            <div class="card" style="flex:1">
+              <h4>Round History</h4>
+              <div id="rpsHistory" class="muted" style="font-family:monospace;font-size:12px;max-height:220px;overflow-y:auto;border:1px solid var(--line);border-radius:8px;padding:8px;background:#fffcf7;min-height:80px">Welcome to Neon Arena</div>
             </div>
           </div>
         </section>
@@ -607,103 +712,230 @@
 
         <section class="panel" id="todo">
           <div class="title">
-            <h3>To-Do Manager</h3>
+            <h3>TaskFlow Studio</h3>
             <span class="chip">to_do.py</span>
           </div>
+          <p class="muted" style="margin:0 0 8px">Select a task to edit or complete it. Keep your day organized.</p>
+          <div class="row" style="margin-bottom:6px">
+            <div style="flex:1;text-align:center;padding:6px;border:1px solid var(--line);border-radius:8px;background:#fffef9">
+              <div class="muted" style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em">Total</div>
+              <div style="font-size:22px;font-weight:700;color:var(--accent-a)" id="todoStatTotal">0</div>
+            </div>
+            <div style="flex:1;text-align:center;padding:6px;border:1px solid var(--line);border-radius:8px;background:#fffef9">
+              <div class="muted" style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em">Done</div>
+              <div style="font-size:22px;font-weight:700;color:var(--ok)" id="todoStatDone">0</div>
+            </div>
+            <div style="flex:1;text-align:center;padding:6px;border:1px solid var(--line);border-radius:8px;background:#fffef9">
+              <div class="muted" style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em">Pending</div>
+              <div style="font-size:22px;font-weight:700;color:var(--bad)" id="todoStatPending">0</div>
+            </div>
+          </div>
           <div class="row">
-            <div class="card">
+            <div class="card" style="flex:2">
               <label>Task</label>
-              <input id="todoInput" placeholder="Enter task" />
-              <button class="action" style="margin-top: 8px" id="todoAdd">
-                Add Task
-              </button>
-              <div id="todoList"></div>
+              <input id="todoInput" placeholder="Enter task and press Add or Enter" />
+              <div class="row" style="margin-top: 8px">
+                <button class="action" id="todoAdd">Add</button>
+                <button class="action cool" id="todoUpdate">Update</button>
+                <button class="action alt" id="todoToggle">Toggle Done</button>
+                <button class="action" style="background:var(--bad)" id="todoDelete">Delete</button>
+              </div>
+              <div id="todoList" style="margin-top:8px"></div>
+              <div class="row" style="margin-top:8px">
+                <button class="action" style="background:#5f584d" id="todoClearAll">Clear All</button>
+              </div>
+            </div>
+            <div class="card" style="flex:1">
+              <h4>Quick Tips</h4>
+              <ul class="muted" style="font-size:13px;padding-left:18px;margin:4px 0">
+                <li>Press Enter to add quickly</li>
+                <li>Click a task to select it for update/delete</li>
+                <li>Use Toggle Done to mark progress</li>
+                <li>Clear All to restart your board</li>
+              </ul>
+              <h4 style="margin-top:12px">Status Legend</h4>
+              <div style="font-family:monospace;font-size:13px;color:var(--bad)">[ ] Pending</div>
+              <div style="font-family:monospace;font-size:13px;color:var(--ok)">[x] Completed</div>
             </div>
           </div>
         </section>
 
         <section class="panel" id="aim">
           <div class="title">
-            <h3>Aim Trainer</h3>
+            <h3>Aim & Reflex Studio</h3>
             <span class="chip">aim_trainer.py</span>
           </div>
+          <p class="muted" style="margin:0 0 8px">15-second blitz. Click targets as fast as you can.</p>
           <div class="row">
-            <div class="card">
-              <div class="row">
-                <button class="action" id="aimStart">Start 15s Round</button>
-                <div id="aimInfo" class="muted">Score: 0 | Time: 15</div>
+            <div class="card" style="flex:1">
+              <div class="row" style="margin-bottom:10px">
+                <button class="action" id="aimStart">Start Round</button>
+                <div id="aimInfo" class="muted" style="margin:0;font-size:16px">Score: 0 | Time: 15s</div>
               </div>
               <div class="aim-box" id="aimBox"></div>
+              <div class="row" style="margin-top:10px;justify-content:space-between">
+                <div class="muted">Accuracy: <span id="aimAccuracy">0%</span></div>
+                <div class="muted">Hits: <span id="aimHits">0</span></div>
+              </div>
+            </div>
+            <div class="card" style="flex:0.3">
+              <h4>Last Round</h4>
+              <div id="aimLastScore" class="result" style="margin:0;font-size:22px">0</div>
+              <div class="muted">Press Start to top your high score.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="sudoku">
+          <div class="title">
+            <h3>Sudoku Aurora</h3>
+            <span class="chip">sudoku_solver.py</span>
+          </div>
+          <p class="muted" style="margin:0 0 8px">Dynamic board with solve animation. Click solve to watch the logic in motion.</p>
+          <div class="row">
+            <div class="card" style="flex:1">
+              <div class="grid-sudoku" id="sudokuGrid"></div>
+              <div class="row" style="margin-top:10px">
+                <button class="action" id="sudokuSolve">Solve with Animation</button>
+                <button class="action alt" id="sudokuNew">New Puzzle</button>
+                <button class="action cool" id="sudokuReset">Reset</button>
+              </div>
+              <div class="result" id="sudokuStatus" style="font-size:16px;margin-top:8px">Select a puzzle.</div>
+            </div>
+            <div class="card" style="flex:0.4">
+              <h4>Rules</h4>
+              <ul class="muted" style="font-size:13px;padding-left:18px">
+                <li>Digits 1-9 exclusively</li>
+                <li>Row/Col uniqueness</li>
+                <li>3x3 subgrid uniqueness</li>
+                <li>Originals in black, solutions in cyan.</li>
+              </ul>
             </div>
           </div>
         </section>
 
         <section class="panel" id="guess">
           <div class="title">
-            <h3>Guess Number</h3>
+            <h3>Guess Number Studio</h3>
             <span class="chip">guess_number.py</span>
           </div>
+          <p class="muted" style="margin:0 0 8px">A modern number duel: you vs the machine.</p>
+          <div class="row" style="margin-bottom:8px">
+            <button class="action" id="guessModePlayer" style="flex:1">I Guess</button>
+            <button class="action alt" id="guessModeComp" style="flex:1">Computer Guesses</button>
+          </div>
           <div class="row">
-            <div class="card">
-              <p class="muted">Guess a number from 1 to 100.</p>
-              <input type="number" id="guessInput" />
-              <button class="action" style="margin-top: 8px" id="guessBtn">
-                Submit Guess
-              </button>
+            <div class="card" id="guessPlayerPanel">
+              <h4>You Guess the Secret Number</h4>
+              <div class="row" style="align-items:end">
+                <div style="flex:1"><label>Max Number</label><input type="number" id="guessMax" value="100" min="2" /></div>
+                <button class="action alt" id="guessNewGame" style="margin-left:8px">New Game</button>
+              </div>
+              <div class="row" style="align-items:end;margin-top:8px">
+                <div style="flex:1"><label>Your Guess</label><input type="number" id="guessInput" /></div>
+                <button class="action" id="guessBtn" style="margin-left:8px">Submit Guess</button>
+              </div>
               <div class="result" id="guessResult"></div>
+              <div class="muted" id="guessAttempts">Attempts: 0</div>
+            </div>
+            <div class="card" id="guessCompPanel" style="display:none">
+              <h4>Computer Guesses Your Number</h4>
+              <p class="muted">Think of a number, then guide the computer with the buttons.</p>
+              <div class="row" style="align-items:end">
+                <div style="flex:1"><label>Max Number</label><input type="number" id="guessCompMax" value="100" min="2" /></div>
+                <button class="action alt" id="guessCompStart" style="margin-left:8px">Start</button>
+              </div>
+              <div class="result" id="guessCompLabel" style="font-size:18px;margin:10px 0">Press Start to begin.</div>
+              <div class="row">
+                <button class="action" id="guessCompLow" disabled>Too Low</button>
+                <button class="action" id="guessCompHigh" disabled style="background:var(--bad)">Too High</button>
+                <button class="action alt" id="guessCompCorrect" disabled>Correct!</button>
+              </div>
+              <div class="muted" id="guessCompAttempts">Attempts: 0</div>
+              <div class="muted" id="guessCompStatus"></div>
             </div>
           </div>
         </section>
 
         <section class="panel" id="mastermind">
           <div class="title">
-            <h3>Mastermind</h3>
+            <h3>Mastermind – Neon Edition</h3>
             <span class="chip">mastermind_game.py</span>
           </div>
+          <p class="muted" style="margin:0 0 6px">Crack the 4-color code. Colors: R=Ruby G=Glow B=Blue Y=Sun W=Frost O=Amber</p>
           <div class="row">
-            <div class="card">
-              <p class="muted">
-                Guess 4 digits, each from 1-6 (example: 1234).
-              </p>
-              <input id="mmInput" maxlength="4" placeholder="1234" />
-              <button class="action" style="margin-top: 8px" id="mmGuess">
-                Guess
-              </button>
-              <div class="result" id="mmResult"></div>
-              <div id="mmHistory" class="muted"></div>
+            <div class="card" style="flex:1">
+              <div id="mmStatus" style="font-weight:700;color:var(--accent-c);margin-bottom:6px">Attempts Left: 10</div>
+              <div style="margin-bottom:8px">
+                <span class="muted" style="font-size:12px">Secret Code:</span>
+                <span id="mmSecretSlots" style="font-family:monospace;font-size:16px;font-weight:700;letter-spacing:6px;background:#f0e8d6;padding:4px 10px;border-radius:6px;border:1px solid var(--line)">? ? ? ?</span>
+              </div>
+              <div class="row" style="align-items:end">
+                <select id="mmSlot0" style="flex:1"><option>R</option><option>G</option><option>B</option><option>Y</option><option>W</option><option>O</option></select>
+                <select id="mmSlot1" style="flex:1"><option>R</option><option>G</option><option>B</option><option>Y</option><option>W</option><option>O</option></select>
+                <select id="mmSlot2" style="flex:1"><option>R</option><option>G</option><option>B</option><option>Y</option><option>W</option><option>O</option></select>
+                <select id="mmSlot3" style="flex:1"><option>R</option><option>G</option><option>B</option><option>Y</option><option>W</option><option>O</option></select>
+                <button class="action" id="mmGuess" style="margin-left:8px">Submit Guess</button>
+                <button class="action alt" id="mmNewGame" style="margin-left:4px">New Game</button>
+              </div>
+              <div class="result" id="mmResult">Make your first move</div>
+            </div>
+            <div class="card" style="flex:1">
+              <h4>Guess History</h4>
+              <div id="mmHistory" class="muted" style="font-family:monospace;font-size:13px;max-height:240px;overflow-y:auto;border:1px solid var(--line);border-radius:8px;padding:8px;background:#fffcf7;min-height:60px"></div>
             </div>
           </div>
         </section>
 
         <section class="panel" id="mines">
           <div class="title">
-            <h3>Minesweeper 8x8</h3>
+            <h3>Minesweeper Pro</h3>
             <span class="chip">minesweeper.py</span>
           </div>
+          <p class="muted" style="margin:0 0 8px">Standard 10x10 grid with 10 mines. Right-click to flag.</p>
           <div class="row">
-            <div class="card">
-              <button class="action" id="mineReset">New Board</button>
-              <div class="result" id="mineStatus"></div>
-              <div class="mine-grid" id="mineGrid"></div>
+            <div class="card" style="flex:1">
+              <div class="row" style="margin-bottom:10px">
+                <button class="action" id="mineReset">New Game</button>
+                <div id="mineStatus" class="result" style="margin:0;font-size:16px">Ready to play.</div>
+              </div>
+              <div id="mineGrid" class="mine-grid" style="grid-template-columns: repeat(10, 1fr); gap: 2px;"></div>
+            </div>
+            <div class="card" style="flex:0.4">
+              <h4>Controls</h4>
+              <ul class="muted" style="font-size:13px;padding-left:18px">
+                <li>Left Click: Dig cell</li>
+                <li>Right Click: Flag mine</li>
+                <li>Numbers: Nearby mines</li>
+                <li>🚩: High chance of bomb</li>
+              </ul>
             </div>
           </div>
         </section>
 
         <section class="panel" id="slot">
           <div class="title">
-            <h3>Slot Machine</h3>
+            <h3>Neon Slot Lounge</h3>
             <span class="chip">slot_machine.py</span>
           </div>
+          <p class="muted" style="margin:0 0 8px">Aesthetic animated frontend with live slot interaction. Symbols: A(5x) B(4x) C(3x) D(2x)</p>
           <div class="row">
-            <div class="card">
-              <div>Balance: <strong id="slotBalance">100</strong></div>
-              <label style="margin-top: 8px; display: block">Bet Amount</label>
-              <input type="number" id="slotBet" value="10" min="1" />
-              <button class="action" style="margin-top: 8px" id="slotSpin">
-                Spin
-              </button>
-              <div class="slot" id="slotReels">- - -</div>
-              <div class="result" id="slotResult"></div>
+            <div class="card" style="flex:2">
+              <div style="text-align:right;margin-bottom:8px">
+                <span class="muted">Balance</span><br>
+                <strong id="slotBalance" style="font-size:22px;color:var(--ok)">$ 200</strong>
+              </div>
+              <div class="row" style="gap:10px;margin-bottom:8px">
+                <div class="slot" id="slotReel0" style="flex:1;font-size:42px">A</div>
+                <div class="slot" id="slotReel1" style="flex:1;font-size:42px">A</div>
+                <div class="slot" id="slotReel2" style="flex:1;font-size:42px">A</div>
+              </div>
+              <div class="row" style="align-items:end">
+                <div style="flex:1"><label>Bet / line ($)</label><input type="number" id="slotBet" value="10" min="1" max="100" /></div>
+                <div style="flex:1"><label>Lines (1-3)</label><input type="number" id="slotLines" value="3" min="1" max="3" /></div>
+                <button class="action" id="slotSpin" style="margin-left:8px;padding:10px 22px;font-size:16px">SPIN</button>
+              </div>
+              <div class="result" id="slotResult" style="margin-top:10px">Set your bet and press SPIN.</div>
             </div>
           </div>
         </section>
@@ -732,8 +964,9 @@
     </div>
 
     <script>
-      const navButtons = Array.from(document.querySelectorAll(".nav-btn"));
-      const panels = Array.from(document.querySelectorAll(".panel"));
+      // Navigation
+      const navButtons = document.querySelectorAll(".nav-btn");
+      const panels = document.querySelectorAll(".panel");
 
       navButtons.forEach((btn) => {
         btn.addEventListener("click", () => {
@@ -744,656 +977,497 @@
         });
       });
 
-      // Clock
-      const clockReadout = document.getElementById("clockReadout");
-      const clockDate = document.getElementById("clockDate");
+      // Digital Clock Logic (clock.py)
       function tickClock() {
         const now = new Date();
-        clockReadout.textContent = now.toLocaleTimeString();
-        clockDate.textContent = now.toDateString();
+        document.getElementById("clockReadout").textContent = now.toLocaleTimeString();
+        document.getElementById("clockDate").textContent = now.toDateString();
       }
       setInterval(tickClock, 1000);
       tickClock();
 
-      // Hotel menu billing
-      const menuItems = {
-        Tea: 20,
-        Coffee: 30,
-        Sandwich: 70,
-        Burger: 120,
-        Pizza: 180,
-        Pasta: 150,
-        "Ice Cream": 80,
+      // Hotel Menu Billing (hotelmenu.py)
+      const hotelMenu = {
+        Tea: 20, Coffee: 30, Sandwich: 70, Burger: 120, Pizza: 180, Pasta: 150, "Ice Cream": 80
       };
-      const hotelItem = document.getElementById("hotelItem");
-      const hotelQty = document.getElementById("hotelQty");
-      const hotelAdd = document.getElementById("hotelAdd");
-      const hotelClear = document.getElementById("hotelClear");
-      const hotelList = document.getElementById("hotelList");
-      const hotelTotal = document.getElementById("hotelTotal");
-      const bill = [];
+      const hotelState = { items: [] };
 
-      Object.entries(menuItems).forEach(([item, price]) => {
+      // Initialize Menu
+      const hSelect = document.getElementById("hotelItem");
+      const hDisplay = document.getElementById("hotelMenuDisplay");
+      Object.entries(hotelMenu).forEach(([name, price]) => {
         const opt = document.createElement("option");
-        opt.value = item;
-        opt.textContent = `${item} - ${price}`;
-        hotelItem.appendChild(opt);
+        opt.value = name; opt.textContent = `${name} - Rs ${price}`;
+        hSelect.appendChild(opt);
       });
+      hDisplay.innerHTML = Object.entries(hotelMenu).map(([n, p]) => `${n.padEnd(12)}: Rs ${p}`).join("<br>");
 
-      function renderBill() {
-        if (!bill.length) {
-          hotelList.textContent = "No items added yet.";
-          hotelTotal.textContent = "Total: 0";
+      function updateHotelUI() {
+        const list = document.getElementById("hotelList");
+        const subLabel = document.getElementById("hotelSubtotal");
+        const taxLabel = document.getElementById("hotelTax");
+        const grandLabel = document.getElementById("hotelGrand");
+        const liveLabel = document.getElementById("hotelLiveTotal");
+
+        if (!hotelState.items.length) {
+          list.textContent = "No items added yet.";
+          subLabel.textContent = "Rs 0.00"; taxLabel.textContent = "Rs 0.00";
+          grandLabel.textContent = "Grand Total: Rs 0.00"; liveLabel.textContent = "Rs 0";
           return;
         }
-        hotelList.innerHTML = bill
-          .map((x) => `${x.item} x ${x.qty} = ${x.amount}`)
-          .join("<br>");
-        const total = bill.reduce((sum, x) => sum + x.amount, 0);
-        hotelTotal.textContent = `Total: ${total}`;
+
+        list.innerHTML = hotelState.items.map(x => `${x.name.padEnd(10)} x${x.qty} = ${x.total}`).join("<br>");
+        const subtotal = hotelState.items.reduce((s, i) => s + i.total, 0);
+        const tax = subtotal * 0.05;
+        const grand = subtotal + tax;
+
+        subLabel.textContent = `Rs ${subtotal.toFixed(2)}`;
+        taxLabel.textContent = `Rs ${tax.toFixed(2)}`;
+        grandLabel.textContent = `Grand Total: Rs ${grand.toFixed(2)}`;
+        liveLabel.textContent = `Rs ${grand.toFixed(0)}`;
       }
 
-      hotelAdd.addEventListener("click", () => {
-        const item = hotelItem.value;
-        const qty = Number(hotelQty.value || 0);
-        if (qty < 1) return;
-        bill.push({ item, qty, amount: qty * menuItems[item] });
-        renderBill();
-      });
+      document.getElementById("hotelAdd").onclick = () => {
+        const name = hSelect.value;
+        const qty = parseInt(document.getElementById("hotelQty").value) || 1;
+        hotelState.items.push({ name, qty, total: hotelMenu[name] * qty });
+        updateHotelUI();
+      };
 
-      hotelClear.addEventListener("click", () => {
-        bill.length = 0;
-        renderBill();
-      });
+      document.getElementById("hotelRemoveLast").onclick = () => {
+        hotelState.items.pop();
+        updateHotelUI();
+      };
 
-      // Rent splitter (full mode aligned with rent.py)
-      const rentTotalInput = document.getElementById("rentTotal");
-      const rentFoodInput = document.getElementById("rentFood");
-      const rentUnitsInput = document.getElementById("rentUnits");
-      const rentRateInput = document.getElementById("rentRate");
-      const rentPeopleInput = document.getElementById("rentPeople");
-      const rentBreakRent = document.getElementById("rentBreakRent");
-      const rentBreakFood = document.getElementById("rentBreakFood");
-      const rentBreakElec = document.getElementById("rentBreakElec");
-      const rentBreakTotal = document.getElementById("rentBreakTotal");
-      const rentPerPerson = document.getElementById("rentPerPerson");
-      const rentSummary = document.getElementById("rentSummary");
-      let rentCopyNotice = "";
+      document.getElementById("hotelClear").onclick = () => {
+        hotelState.items = [];
+        document.getElementById("hotelBillPreview").value = "";
+        updateHotelUI();
+      };
 
-      function fmtRs(value) {
-        return `Rs ${Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-      }
-
-      function updateRentSplitter() {
-        const rent = Number(rentTotalInput.value || 0);
-        const food = Number(rentFoodInput.value || 0);
-        const units = Number(rentUnitsInput.value || 0);
-        const rate = Number(rentRateInput.value || 0);
-        const peopleRaw = Number(rentPeopleInput.value || 0);
-        const people = peopleRaw > 0 ? peopleRaw : 1;
-
-        const totalElectricity = units * rate;
-        const totalBill = rent + food + totalElectricity;
-        const perPerson = totalBill / people;
-
-        rentBreakRent.textContent = fmtRs(rent);
-        rentBreakFood.textContent = fmtRs(food);
-        rentBreakElec.textContent = fmtRs(totalElectricity);
-        rentBreakTotal.textContent = fmtRs(totalBill);
-        rentPerPerson.textContent = `Per Person Share: ${fmtRs(perPerson)}${rentCopyNotice}`;
-        rentPerPerson.style.color = "var(--ok)";
-
-        const lines = [
-          "┌─────────────────────────────────────┐",
-          "│     FLAT EXPENSE RECEIPT            │",
-          "└─────────────────────────────────────┘",
-          "",
-          `  Rent Amount              Rs ${rent.toFixed(2).padStart(10, " ")}`,
-          `  Food & Groceries         Rs ${food.toFixed(2).padStart(10, " ")}`,
-          `  Electricity              Rs ${totalElectricity.toFixed(2).padStart(10, " ")}`,
-          `    (${units} units x Rs ${rate}/unit)`,
-          "",
-          "  ---------------------------------",
-          `  Total Amount             Rs ${totalBill.toFixed(2).padStart(10, " ")}`,
-          "  ---------------------------------",
-          "",
-          `  Number of People         ${Math.trunc(people).toString().padStart(13, " ")}`,
-          `  Amount Per Person        Rs ${perPerson.toFixed(2).padStart(10, " ")}`,
-          "",
-          "┌─────────────────────────────────────┐",
-        ];
-
-        rentSummary.value = lines.join("\n");
-      }
-
-      [
-        rentTotalInput,
-        rentFoodInput,
-        rentUnitsInput,
-        rentRateInput,
-        rentPeopleInput,
-      ].forEach((el) => el.addEventListener("input", updateRentSplitter));
-
-      document.getElementById("rentReset").addEventListener("click", () => {
-        rentTotalInput.value = "0";
-        rentFoodInput.value = "0";
-        rentUnitsInput.value = "0";
-        rentRateInput.value = "0";
-        rentPeopleInput.value = "0";
-        updateRentSplitter();
-      });
-
-      document
-        .getElementById("rentCopy")
-        .addEventListener("click", async () => {
-          const text = rentSummary.value;
-          try {
-            await navigator.clipboard.writeText(text);
-            rentCopyNotice = " | Summary copied";
-            updateRentSplitter();
-          } catch (_err) {
-            rentSummary.focus();
-            rentSummary.select();
-            document.execCommand("copy");
-            rentCopyNotice = " | Summary copied";
-            updateRentSplitter();
-          }
+      document.getElementById("hotelCheckout").onclick = () => {
+        if (!hotelState.items.length) return;
+        const subtotal = hotelState.items.reduce((s, i) => s + i.total, 0);
+        const tax = subtotal * 0.05;
+        const grand = subtotal + tax;
+        const now = new Date();
+        
+        let billText = "===============================\n";
+        billText += "      PYTHON RESTAURANT        \n";
+        billText += "===============================\n";
+        billText += `Date: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}\n\n`;
+        hotelState.items.forEach(i => {
+           billText += `${i.name.padEnd(12)} x${i.qty.toString().padEnd(3)} Rs ${i.total.toFixed(2).padStart(8)}\n`;
         });
+        billText += "-------------------------------\n";
+        billText += `Subtotal:      Rs ${subtotal.toFixed(2).padStart(12)}\n`;
+        billText += `Tax (5%):      Rs ${tax.toFixed(2).padStart(12)}\n`;
+        billText += `GRAND TOTAL:   Rs ${grand.toFixed(2).padStart(12)}\n`;
+        billText += "===============================\n";
+        billText += "   Thank you for visiting!     \n";
+        
+        document.getElementById("hotelBillPreview").value = billText;
+      };
 
-      updateRentSplitter();
+      // Rent Splitter (rent.py)
+      function updateRent() {
+        const rent = parseFloat(document.getElementById("rentTotal").value) || 0;
+        const food = parseFloat(document.getElementById("rentFood").value) || 0;
+        const units = parseFloat(document.getElementById("rentUnits").value) || 0;
+        const rate = parseFloat(document.getElementById("rentRate").value) || 0;
+        const people = Math.max(1, parseInt(document.getElementById("rentPeople").value) || 1);
 
-      // Rock Paper Scissors
-      const rpsMap = ["Rock", "Paper", "Scissors"];
-      const rpsResult = document.getElementById("rpsResult");
-      document.querySelectorAll("[data-rps]").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const player = btn.dataset.rps;
-          const cpu = rpsMap[Math.floor(Math.random() * 3)];
-          let result = "Draw";
-          if (
-            (player === "Rock" && cpu === "Scissors") ||
-            (player === "Paper" && cpu === "Rock") ||
-            (player === "Scissors" && cpu === "Paper")
-          ) {
-            result = "You Win";
-          } else if (player !== cpu) {
-            result = "Computer Wins";
-          }
-          rpsResult.textContent = `You: ${player} | CPU: ${cpu} -> ${result}`;
-        });
+        const elec = units * rate;
+        const total = rent + food + elec;
+        const perPerson = total / people;
+
+        document.getElementById("rentBreakRent").textContent = `Rs ${rent.toFixed(2)}`;
+        document.getElementById("rentBreakFood").textContent = `Rs ${food.toFixed(2)}`;
+        document.getElementById("rentBreakElec").textContent = `Rs ${elec.toFixed(2)}`;
+        document.getElementById("rentBreakTotal").textContent = `Rs ${total.toFixed(2)}`;
+        document.getElementById("rentPerPerson").textContent = `Per Person Share: Rs ${perPerson.toFixed(2)}`;
+
+        let rec = "┌─────────────────────────────────────┐\n";
+        rec += "│     FLAT EXPENSE RECEIPT            │\n";
+        rec += "└─────────────────────────────────────┘\n\n";
+        rec += `  Rent:              Rs ${rent.toFixed(2).padStart(10)}\n`;
+        rec += `  Food & Groceries:  Rs ${food.toFixed(2).padStart(10)}\n`;
+        rec += `  Electricity:       Rs ${elec.toFixed(2).padStart(10)}\n`;
+        rec += `    (${units} units x Rs ${rate}/unit)\n\n`;
+        rec += "  -------------------------------------\n";
+        rec += `  Total:             Rs ${total.toFixed(2).padStart(10)}\n`;
+        rec += `  Share / Person:    Rs ${perPerson.toFixed(2).padStart(10)}\n`;
+        rec += "  -------------------------------------\n";
+        document.getElementById("rentSummary").value = rec;
+      }
+      document.querySelectorAll("#rent input").forEach(i => i.oninput = updateRent);
+      document.getElementById("rentReset").onclick = () => {
+        document.querySelectorAll("#rent input").forEach(i => i.value = (i.id === "rentPeople" ? 1 : 0));
+        updateRent();
+      };
+      document.getElementById("rentCopy").onclick = () => {
+        const area = document.getElementById("rentSummary");
+        area.select(); document.execCommand("copy");
+        alert("Receipt copied to clipboard!");
+      };
+      updateRent();
+
+      // Rock Paper Scissors (rock_paper_scissors.py)
+      const rpsState = { p: 0, c: 0, t: 0, round: 0 };
+      const rpsHistory = document.getElementById("rpsHistory");
+      document.querySelectorAll("[data-rps]").forEach(b => {
+        b.onclick = () => {
+          const pMove = b.dataset.rps;
+          const moves = ["Rock", "Paper", "Scissors"];
+          const cMove = moves[Math.floor(Math.random() * 3)];
+          rpsState.round++;
+          let resText = "";
+          if (pMove === cMove) { rpsState.t++; resText = "IT'S A TIE!"; }
+          else if ((pMove === "Rock" && cMove === "Scissors") || (pMove === "Paper" && cMove === "Rock") || (pMove === "Scissors" && cMove === "Paper")) {
+            rpsState.p++; resText = "YOU WIN!";
+          } else { rpsState.c++; resText = "CPU WINS!"; }
+
+          document.getElementById("rpsPlayerScore").textContent = rpsState.p;
+          document.getElementById("rpsCompScore").textContent = rpsState.c;
+          document.getElementById("rpsTieScore").textContent = rpsState.t;
+          document.getElementById("rpsRoundBadge").textContent = `ROUND ${rpsState.round.toString().padStart(2, '0')}`;
+          document.getElementById("rpsResult").textContent = resText;
+          document.getElementById("rpsRoundDetail").textContent = `Your Move: ${pMove} | CPU Move: ${cMove}`;
+
+          const log = document.createElement("div");
+          log.textContent = `#${rpsState.round}: ${pMove} vs ${cMove} -> ${resText}`;
+          rpsHistory.prepend(log);
+        };
       });
+      document.getElementById("rpsReset").onclick = () => {
+        Object.assign(rpsState, { p: 0, c: 0, t: 0, round: 0 });
+        document.getElementById("rpsPlayerScore").textContent = 0;
+        document.getElementById("rpsCompScore").textContent = 0;
+        document.getElementById("rpsTieScore").textContent = 0;
+        document.getElementById("rpsRoundBadge").textContent = "ROUND 00";
+        document.getElementById("rpsResult").textContent = "Scores reset.";
+        rpsHistory.innerHTML = "";
+      };
 
-      // Tic Tac Toe
-      const tttGrid = document.getElementById("tttGrid");
-      const tttStatus = document.getElementById("tttStatus");
+      // Tic Tac Toe (tic_tac_toe.py)
       let tttBoard = Array(9).fill("");
-      let tttTurn = "X";
-      let tttDone = false;
-      const wins = [
-        [0, 1, 2],
-        [3, 4, 5],
-        [6, 7, 8],
-        [0, 3, 6],
-        [1, 4, 7],
-        [2, 5, 8],
-        [0, 4, 8],
-        [2, 4, 6],
-      ];
-
-      function tttRender() {
+      let tttPlayer = "X";
+      const tttGrid = document.getElementById("tttGrid");
+      function renderTTT() {
         tttGrid.innerHTML = "";
-        tttBoard.forEach((cell, i) => {
+        tttBoard.forEach((val, i) => {
           const b = document.createElement("button");
-          b.className = "ttt";
-          b.textContent = cell;
-          b.addEventListener("click", () => {
-            if (tttDone || tttBoard[i]) return;
-            tttBoard[i] = tttTurn;
-            if (tttCheck(tttTurn)) {
-              tttStatus.textContent = `Winner: ${tttTurn}`;
-              tttDone = true;
-            } else if (tttBoard.every(Boolean)) {
-              tttStatus.textContent = "Draw";
-              tttDone = true;
-            } else {
-              tttTurn = tttTurn === "X" ? "O" : "X";
-              tttStatus.textContent = `Turn: ${tttTurn}`;
+          b.className = "ttt"; b.textContent = val;
+          if (val === "X") b.style.color = "var(--accent-b)";
+          if (val === "O") b.style.color = "var(--bad)";
+          b.onclick = () => {
+            if (val || checkTTTwin()) return;
+            tttBoard[i] = tttPlayer;
+            if (checkTTTwin()) document.getElementById("tttStatus").textContent = `${tttPlayer} Wins!`;
+            else if (tttBoard.every(x => x)) document.getElementById("tttStatus").textContent = "Draw!";
+            else {
+              tttPlayer = tttPlayer === "X" ? "O" : "X";
+              document.getElementById("tttStatus").textContent = `Turn: ${tttPlayer}`;
             }
-            tttRender();
-          });
+            renderTTT();
+          };
           tttGrid.appendChild(b);
         });
       }
-
-      function tttCheck(mark) {
-        return wins.some((w) => w.every((idx) => tttBoard[idx] === mark));
+      function checkTTTwin() {
+        const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+        return wins.some(c => tttBoard[c[0]] && tttBoard[c[0]] === tttBoard[c[1]] && tttBoard[c[0]] === tttBoard[c[2]]);
       }
+      document.getElementById("tttReset").onclick = () => {
+        tttBoard.fill(""); tttPlayer = "X";
+        document.getElementById("tttStatus").textContent = "Turn: X";
+        renderTTT();
+      };
+      renderTTT();
 
-      document.getElementById("tttReset").addEventListener("click", () => {
-        tttBoard = Array(9).fill("");
-        tttTurn = "X";
-        tttDone = false;
-        tttStatus.textContent = "Turn: X";
-        tttRender();
-      });
-      tttRender();
-
-      // To-do
-      const todoInput = document.getElementById("todoInput");
-      const todoList = document.getElementById("todoList");
-      const todos = [];
-
-      function renderTodos() {
-        todoList.innerHTML = "";
-        todos.forEach((todo, idx) => {
-          const div = document.createElement("div");
-          div.className = "todo-item";
-
-          const cb = document.createElement("input");
-          cb.type = "checkbox";
-          cb.checked = todo.done;
-          cb.style.width = "auto";
-          cb.addEventListener("change", () => {
-            todo.done = cb.checked;
-            renderTodos();
-          });
-
-          const txt = document.createElement("span");
-          txt.textContent = todo.text;
-          if (todo.done) txt.className = "done";
-
-          const del = document.createElement("button");
-          del.className = "action cool";
-          del.textContent = "Delete";
-          del.addEventListener("click", () => {
-            todos.splice(idx, 1);
-            renderTodos();
-          });
-
-          div.appendChild(cb);
-          div.appendChild(txt);
-          div.appendChild(del);
-          todoList.appendChild(div);
+      // TaskFlow Studio (to_do.py)
+      let tasks = [];
+      let selectedTask = null;
+      function updateTodoStats() {
+        document.getElementById("todoStatTotal").textContent = tasks.length;
+        document.getElementById("todoStatDone").textContent = tasks.filter(t => t.done).length;
+        document.getElementById("todoStatPending").textContent = tasks.filter(t => !t.done).length;
+      }
+      function renderTasks() {
+        const list = document.getElementById("todoList");
+        list.innerHTML = "";
+        tasks.forEach((t, i) => {
+          const d = document.createElement("div");
+          d.className = `todo-item ${selectedTask === i ? 'active' : ''}`;
+          d.innerHTML = `<span>${t.done ? '[x]' : '[ ]'} ${t.text}</span>`;
+          if (t.done) d.children[0].style.textDecoration = "line-through";
+          d.onclick = () => { selectedTask = i; renderTasks(); document.getElementById("todoInput").value = t.text; };
+          list.appendChild(d);
         });
+        updateTodoStats();
       }
+      document.getElementById("todoAdd").onclick = () => {
+        const text = document.getElementById("todoInput").value.trim();
+        if (text) { tasks.push({ text, done: false }); document.getElementById("todoInput").value = ""; renderTasks(); }
+      };
+      document.getElementById("todoUpdate").onclick = () => {
+        if (selectedTask !== null) { tasks[selectedTask].text = document.getElementById("todoInput").value; renderTasks(); }
+      };
+      document.getElementById("todoToggle").onclick = () => {
+        if (selectedTask !== null) { tasks[selectedTask].done = !tasks[selectedTask].done; renderTasks(); }
+      };
+      document.getElementById("todoDelete").onclick = () => {
+        if (selectedTask !== null) { tasks.splice(selectedTask, 1); selectedTask = null; renderTasks(); }
+      };
+      document.getElementById("todoClearAll").onclick = () => { tasks = []; selectedTask = null; renderTasks(); };
 
-      document.getElementById("todoAdd").addEventListener("click", () => {
-        const text = todoInput.value.trim();
-        if (!text) return;
-        todos.push({ text, done: false });
-        todoInput.value = "";
-        renderTodos();
-      });
-
-      // Aim trainer
-      const aimBox = document.getElementById("aimBox");
-      const aimInfo = document.getElementById("aimInfo");
-      let aimScore = 0;
-      let aimTime = 15;
-      let aimTimer = null;
-
-      function spawnTarget() {
-        aimBox.innerHTML = "";
-        const t = document.createElement("div");
-        t.className = "target";
-        const maxX = Math.max(0, aimBox.clientWidth - 40);
-        const maxY = Math.max(0, aimBox.clientHeight - 40);
-        t.style.left = `${Math.floor(Math.random() * maxX)}px`;
-        t.style.top = `${Math.floor(Math.random() * maxY)}px`;
-        t.addEventListener("click", () => {
-          aimScore += 1;
-          aimInfo.textContent = `Score: ${aimScore} | Time: ${aimTime}`;
-          spawnTarget();
-        });
-        aimBox.appendChild(t);
-      }
-
-      document.getElementById("aimStart").addEventListener("click", () => {
-        clearInterval(aimTimer);
-        aimScore = 0;
-        aimTime = 15;
-        aimInfo.textContent = `Score: ${aimScore} | Time: ${aimTime}`;
-        spawnTarget();
-        aimTimer = setInterval(() => {
-          aimTime -= 1;
-          aimInfo.textContent = `Score: ${aimScore} | Time: ${aimTime}`;
-          if (aimTime <= 0) {
-            clearInterval(aimTimer);
-            aimBox.innerHTML = "";
-            aimInfo.textContent = `Round over. Final Score: ${aimScore}`;
+      // Aim & Reflex Studio (aim_trainer.py)
+      let aimHits = 0, aimMisses = 0;
+      document.getElementById("aimStart").onclick = () => {
+        aimHits = 0; aimMisses = 0; let time = 15;
+        document.getElementById("aimStart").disabled = true;
+        const box = document.getElementById("aimBox");
+        const timer = setInterval(() => {
+          time--;
+          document.getElementById("aimInfo").textContent = `Score: ${aimHits} | Time: ${time}s`;
+          if (time <= 0) {
+            clearInterval(timer); box.innerHTML = "";
+            document.getElementById("aimStart").disabled = false;
+            document.getElementById("aimLastScore").textContent = aimHits;
+            alert(`Round Over! Hits: ${aimHits}, Misses: ${aimMisses}`);
           }
         }, 1000);
-      });
-
-      // Guess number
-      let secret = Math.floor(Math.random() * 100) + 1;
-      let guessTries = 0;
-      document.getElementById("guessBtn").addEventListener("click", () => {
-        const val = Number(document.getElementById("guessInput").value || 0);
-        const out = document.getElementById("guessResult");
-        guessTries += 1;
-        if (val === secret) {
-          out.textContent = `Correct. You guessed it in ${guessTries} tries. New number generated.`;
-          out.style.color = "var(--ok)";
-          secret = Math.floor(Math.random() * 100) + 1;
-          guessTries = 0;
-        } else if (val < secret) {
-          out.textContent = "Too low.";
-          out.style.color = "";
-        } else {
-          out.textContent = "Too high.";
-          out.style.color = "";
+        function spawn() {
+          if (time <= 0) return;
+          box.innerHTML = "";
+          const t = document.createElement("div"); t.className = "target";
+          t.style.left = Math.random() * (box.clientWidth - 40) + "px";
+          t.style.top = Math.random() * (box.clientHeight - 40) + "px";
+          t.onclick = (e) => { e.stopPropagation(); aimHits++; spawn(); updateAimStats(); };
+          box.appendChild(t);
         }
-      });
-
-      // Mastermind
-      const mmResult = document.getElementById("mmResult");
-      const mmHistory = document.getElementById("mmHistory");
-      const mmInput = document.getElementById("mmInput");
-      let mmSecret = Array.from({ length: 4 }, () =>
-        String(Math.floor(Math.random() * 6) + 1),
-      );
-
-      document.getElementById("mmGuess").addEventListener("click", () => {
-        const guess = mmInput.value.trim().split("");
-        if (guess.length !== 4 || guess.some((d) => !/[1-6]/.test(d))) {
-          mmResult.textContent = "Enter exactly 4 digits between 1 and 6.";
-          mmResult.style.color = "var(--bad)";
-          return;
-        }
-        let exact = 0;
-        let partial = 0;
-        const secCopy = [...mmSecret];
-        const gCopy = [...guess];
-        for (let i = 0; i < 4; i++) {
-          if (gCopy[i] === secCopy[i]) {
-            exact += 1;
-            secCopy[i] = null;
-            gCopy[i] = null;
-          }
-        }
-        for (let i = 0; i < 4; i++) {
-          if (!gCopy[i]) continue;
-          const idx = secCopy.indexOf(gCopy[i]);
-          if (idx !== -1) {
-            partial += 1;
-            secCopy[idx] = null;
-          }
-        }
-        mmResult.textContent = `Exact: ${exact}, Partial: ${partial}`;
-        mmResult.style.color = exact === 4 ? "var(--ok)" : "";
-        mmHistory.innerHTML += `${guess.join("")} -> Exact ${exact}, Partial ${partial}<br>`;
-        if (exact === 4) {
-          mmHistory.innerHTML += "You cracked it. New code generated.<br>";
-          mmSecret = Array.from({ length: 4 }, () =>
-            String(Math.floor(Math.random() * 6) + 1),
-          );
-        }
-        mmInput.value = "";
-      });
-
-      // Minesweeper
-      const mineGrid = document.getElementById("mineGrid");
-      const mineStatus = document.getElementById("mineStatus");
-      const SIZE = 8;
-      const MINES = 10;
-      let board = [];
-      let revealed = 0;
-      let mineOver = false;
-
-      function makeBoard() {
-        board = Array.from({ length: SIZE }, () =>
-          Array.from({ length: SIZE }, () => ({
-            mine: false,
-            count: 0,
-            open: false,
-          })),
-        );
-        revealed = 0;
-        mineOver = false;
-        let placed = 0;
-        while (placed < MINES) {
-          const r = Math.floor(Math.random() * SIZE);
-          const c = Math.floor(Math.random() * SIZE);
-          if (!board[r][c].mine) {
-            board[r][c].mine = true;
-            placed += 1;
-          }
-        }
-        for (let r = 0; r < SIZE; r++) {
-          for (let c = 0; c < SIZE; c++) {
-            if (board[r][c].mine) continue;
-            board[r][c].count = neighbors(r, c).filter(
-              ([nr, nc]) => board[nr][nc].mine,
-            ).length;
-          }
-        }
-        renderMines();
-        mineStatus.textContent = "Find all safe cells.";
+        box.onclick = () => { if (time > 0) aimMisses++; updateAimStats(); };
+        spawn();
+      };
+      function updateAimStats() {
+        const total = aimHits + aimMisses;
+        const acc = total ? Math.round((aimHits / total) * 100) : 0;
+        document.getElementById("aimAccuracy").textContent = acc + "%";
+        document.getElementById("aimHits").textContent = aimHits;
       }
 
-      function neighbors(r, c) {
-        const out = [];
-        for (let dr = -1; dr <= 1; dr++) {
-          for (let dc = -1; dc <= 1; dc++) {
-            if (dr === 0 && dc === 0) continue;
-            const nr = r + dr;
-            const nc = c + dc;
-            if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE)
-              out.push([nr, nc]);
+      // Guess Number Studio (guess_number.py)
+      let gnTarget = 50, gnTries = 0;
+      document.getElementById("guessModePlayer").onclick = () => {
+        document.getElementById("guessPlayerPanel").style.display = "block";
+        document.getElementById("guessCompPanel").style.display = "none";
+      };
+      document.getElementById("guessModeComp").onclick = () => {
+        document.getElementById("guessPlayerPanel").style.display = "none";
+        document.getElementById("guessCompPanel").style.display = "block";
+      };
+      function gnNew() {
+        gnTarget = Math.floor(Math.random() * (parseInt(document.getElementById("guessMax").value) || 100)) + 1;
+        gnTries = 0; document.getElementById("guessResult").textContent = "New game started!";
+        document.getElementById("guessAttempts").textContent = "Attempts: 0";
+      }
+      document.getElementById("guessNewGame").onclick = gnNew;
+      document.getElementById("guessBtn").onclick = () => {
+        const val = parseInt(document.getElementById("guessInput").value);
+        gnTries++; document.getElementById("guessAttempts").textContent = `Attempts: ${gnTries}`;
+        if (val === gnTarget) { document.getElementById("guessResult").textContent = "CORRECT!"; gnNew(); }
+        else if (val < gnTarget) document.getElementById("guessResult").textContent = "TOO LOW!";
+        else document.getElementById("guessResult").textContent = "TOO HIGH!";
+      };
+      // Comp Guess Logic
+      let gnLow = 1, gnHigh = 100, gnCompTries = 0;
+      document.getElementById("guessCompStart").onclick = () => {
+        gnLow = 1; gnHigh = parseInt(document.getElementById("guessCompMax").value) || 100;
+        gnCompTries = 0; gnCompGuess();
+        ["guessCompLow", "guessCompHigh", "guessCompCorrect"].forEach(id => document.getElementById(id).disabled = false);
+      };
+      function gnCompGuess() {
+        gnCompTries++;
+        const mid = Math.floor((gnLow + gnHigh) / 2);
+        document.getElementById("guessCompLabel").textContent = `Is it ${mid}?`;
+        document.getElementById("guessCompAttempts").textContent = `Attempts: ${gnCompTries}`;
+      }
+      document.getElementById("guessCompLow").onclick = () => { gnLow = Math.floor((gnLow + gnHigh) / 2) + 1; gnCompGuess(); };
+      document.getElementById("guessCompHigh").onclick = () => { gnHigh = Math.floor((gnLow + gnHigh) / 2) - 1; gnCompGuess(); };
+      document.getElementById("guessCompCorrect").onclick = () => { 
+        document.getElementById("guessCompLabel").textContent = "HAHA! I KNEW IT!";
+        ["guessCompLow", "guessCompHigh", "guessCompCorrect"].forEach(id => document.getElementById(id).disabled = true);
+      };
+
+      // Mastermind (mastermind_game.py)
+      const mmColors = ["R", "G", "B", "Y", "W", "O"];
+      let mmSecret = [], mmTries = 10;
+      function mmNew() {
+        mmSecret = Array.from({length:4}, () => mmColors[Math.floor(Math.random()*6)]);
+        mmTries = 10;
+        document.getElementById("mmStatus").textContent = "Attempts Left: 10";
+        document.getElementById("mmSecretSlots").textContent = "? ? ? ?";
+        document.getElementById("mmHistory").innerHTML = "";
+        document.getElementById("mmGuess").disabled = false;
+      }
+      document.getElementById("mmNewGame").onclick = mmNew;
+      document.getElementById("mmGuess").onclick = () => {
+        const guess = [document.getElementById("mmSlot0").value, document.getElementById("mmSlot1").value, document.getElementById("mmSlot2").value, document.getElementById("mmSlot3").value];
+        let exact = 0, partial = 0;
+        const s = [...mmSecret], g = [...guess];
+        g.forEach((v, i) => { if (v === s[i]) { exact++; s[i] = g[i] = null; } });
+        g.forEach((v, i) => { if (v && s.includes(v)) { partial++; s[s.indexOf(v)] = null; } });
+        
+        mmTries--;
+        document.getElementById("mmStatus").textContent = `Attempts Left: ${mmTries}`;
+        const row = document.createElement("div"); row.style.marginBottom = "4px";
+        row.innerHTML = `<span style="letter-spacing:4px; font-weight:bold">${guess.join(" ")}</span> -> Exact: ${exact} | Partial: ${partial}`;
+        document.getElementById("mmHistory").prepend(row);
+
+        if (exact === 4) { alert("Cracked it!"); mmNew(); }
+        else if (mmTries <= 0) { 
+           alert("Game Over! Hidden code was " + mmSecret.join(" "));
+           document.getElementById("mmSecretSlots").textContent = mmSecret.join(" ");
+           document.getElementById("mmGuess").disabled = true;
+        }
+      };
+      mmNew();
+
+      // Neon Slot Lounge (slot_machine.py)
+      let slotBal = 200;
+      document.getElementById("slotSpin").onclick = () => {
+        const bet = parseInt(document.getElementById("slotBet").value) || 0;
+        const lines = parseInt(document.getElementById("slotLines").value) || 0;
+        if (bet*lines > slotBal || bet <= 0) return alert("Invalid bet/balance!");
+        
+        slotBal -= bet * lines;
+        document.getElementById("slotBalance").textContent = `$ ${slotBal}`;
+        
+        const symbols = ["A", "B", "C", "D"];
+        const vals = {A:5, B:4, C:3, D:2};
+        let steps = 0;
+        const intv = setInterval(() => {
+          document.getElementById("slotReel0").textContent = symbols[Math.floor(Math.random()*4)];
+          document.getElementById("slotReel1").textContent = symbols[Math.floor(Math.random()*4)];
+          document.getElementById("slotReel2").textContent = symbols[Math.floor(Math.random()*4)];
+          steps++;
+          if (steps > 15) {
+             clearInterval(intv);
+             const r = [symbols[Math.floor(Math.random()*4)], symbols[Math.floor(Math.random()*4)], symbols[Math.floor(Math.random()*4)]];
+             document.getElementById("slotReel0").textContent = r[0];
+             document.getElementById("slotReel1").textContent = r[1];
+             document.getElementById("slotReel2").textContent = r[2];
+             
+             if (r[0] === r[1] && r[1] === r[2]) {
+                const win = vals[r[0]] * bet * lines; slotBal += win;
+                document.getElementById("slotResult").textContent = `JACKPOT! You won $${win}`;
+             } else {
+                document.getElementById("slotResult").textContent = `No match. Lost $${bet*lines}`;
+             }
+             document.getElementById("slotBalance").textContent = `$ ${slotBal}`;
           }
+        }, 60);
+      };
+
+      // Minesweeper Pro (minesweeper.py)
+      let mGrid = [], mSize = 10, mMines = 10, mOver = false;
+      function mInit() {
+        mOver = false; mGrid = Array.from({length:mSize}, () => Array.from({length:mSize}, () => ({m:0, v:0, f:0})));
+        let p = 0; while (p < mMines) {
+           const r=Math.floor(Math.random()*mSize), c=Math.floor(Math.random()*mSize);
+           if (!mGrid[r][c].m) { mGrid[r][c].m=1; p++; }
         }
-        return out;
+        for(let r=0; r<mSize; r++) for(let c=0; c<mSize; c++) {
+           if (mGrid[r][c].m) continue;
+           let n=0; for(let i=-1; i<=1; i++) for(let j=-1; j<=1; j++) {
+              const nr=r+i, nc=c+j; if (nr>=0&&nr<mSize&&nc>=0&&nc<mSize&&mGrid[nr][nc].m) n++;
+           }
+           mGrid[r][c].cnt = n;
+        }
+        mRender();
+        document.getElementById("mineStatus").textContent = "Game started.";
       }
-
-      function openCell(r, c) {
-        const cell = board[r][c];
-        if (cell.open || mineOver) return;
-        cell.open = true;
-        revealed += 1;
-        if (cell.mine) {
-          mineOver = true;
-          mineStatus.textContent = "Boom. You hit a mine.";
-          revealAllMines();
-          renderMines();
-          return;
-        }
-        if (cell.count === 0) {
-          neighbors(r, c).forEach(([nr, nc]) => {
-            if (!board[nr][nc].open) openCell(nr, nc);
-          });
-        }
-        if (revealed === SIZE * SIZE - MINES) {
-          mineOver = true;
-          mineStatus.textContent = "You cleared the board.";
-        }
-        renderMines();
+      function mRender() {
+        const container = document.getElementById("mineGrid"); container.innerHTML = "";
+        mGrid.forEach((row, r) => row.forEach((cell, c) => {
+           const el = document.createElement("div"); el.className = "mine-cell" + (cell.v ? " revealed" : "");
+           if (cell.v) {
+              if (cell.m) { el.textContent = "💣"; el.style.background = "var(--bad)"; }
+              else if (cell.cnt) el.textContent = cell.cnt;
+           } else if (cell.f) el.textContent = "🚩";
+           el.onclick = () => { if (!cell.f && !mOver) mDig(r, c); };
+           el.oncontextmenu = (e) => { e.preventDefault(); if (!cell.v && !mOver) { cell.f = !cell.f; mRender(); } };
+           container.appendChild(el);
+        }));
       }
-
-      function revealAllMines() {
-        for (let r = 0; r < SIZE; r++) {
-          for (let c = 0; c < SIZE; c++) {
-            if (board[r][c].mine) board[r][c].open = true;
-          }
+      function mDig(r, c) {
+        if (r<0||r>=mSize||c<0||c>=mSize||mGrid[r][c].v) return;
+        mGrid[r][c].v = 1;
+        if (mGrid[r][c].m) { mOver = true; alert("BOOM!"); mRevealAll(); }
+        else if (mGrid[r][c].cnt === 0) {
+           for(let i=-1; i<=1; i++) for(let j=-1; j<=1; j++) mDig(r+i, c+j);
         }
+        mRender();
+        if (mGrid.flat().filter(x=>!x.m&&!x.v).length === 0) { mOver=true; alert("YOU WIN!"); }
       }
+      function mRevealAll() { mGrid.forEach(row=>row.forEach(c=>c.v=1)); mRender(); }
+      document.getElementById("mineReset").onclick = mInit;
+      mInit();
 
-      function renderMines() {
-        mineGrid.innerHTML = "";
-        for (let r = 0; r < SIZE; r++) {
-          for (let c = 0; c < SIZE; c++) {
-            const cell = board[r][c];
-            const b = document.createElement("button");
-            b.className = "mine-cell";
-            if (cell.open) {
-              b.classList.add("revealed");
-              if (cell.mine) b.textContent = "X";
-              else if (cell.count) b.textContent = String(cell.count);
-            }
-            b.addEventListener("click", () => openCell(r, c));
-            mineGrid.appendChild(b);
-          }
-        }
+      // Sudoku Aurora (sudoku_solver.py)
+      const sPuzzles = [
+        [3,9,0,0,5,0,0,0,0, 0,0,0,2,0,0,0,0,5, 0,0,0,7,1,9,0,8,0, 0,5,0,0,6,8,0,0,0, 2,0,6,0,0,3,0,0,0, 0,0,0,0,0,0,0,0,4, 5,0,0,0,0,0,0,0,0, 6,7,0,1,0,5,0,4,0, 1,0,9,0,0,0,2,0,0],
+        [0,2,0,6,0,8,0,0,0, 5,8,0,0,0,9,7,0,0, 0,0,0,0,4,0,0,0,0, 3,7,0,0,0,0,5,0,0, 6,0,0,0,0,0,0,0,4, 0,0,8,0,0,0,0,1,3, 0,0,0,0,2,0,0,0,0, 0,0,9,8,0,0,0,3,6, 0,0,0,3,0,6,0,9,0]
+      ];
+      let sBoard = [], sOrig = [];
+      function sInit(pIdx) {
+        const raw = sPuzzles[pIdx || 0];
+        sBoard = []; sOrig = [];
+        for(let i=0; i<81; i++) { sBoard.push(raw[i]); sOrig.push(raw[i]); }
+        sRender();
       }
-
-      document.getElementById("mineReset").addEventListener("click", makeBoard);
-      makeBoard();
-
-      // Slot machine
-      const symbols = ["A", "B", "C", "D", "7"];
-      let balance = 100;
-      const slotBalance = document.getElementById("slotBalance");
-      const slotBet = document.getElementById("slotBet");
-      const slotReels = document.getElementById("slotReels");
-      const slotResult = document.getElementById("slotResult");
-
-      document.getElementById("slotSpin").addEventListener("click", () => {
-        const bet = Number(slotBet.value || 0);
-        if (bet <= 0 || bet > balance) {
-          slotResult.textContent = "Invalid bet.";
-          slotResult.style.color = "var(--bad)";
-          return;
-        }
-        const draw = Array.from(
-          { length: 3 },
-          () => symbols[Math.floor(Math.random() * symbols.length)],
-        );
-        slotReels.textContent = draw.join(" ");
-        balance -= bet;
-        if (draw[0] === draw[1] && draw[1] === draw[2]) {
-          const win = bet * 5;
-          balance += win;
-          slotResult.textContent = `Jackpot. You won ${win}.`;
-          slotResult.style.color = "var(--ok)";
-        } else if (
-          draw[0] === draw[1] ||
-          draw[1] === draw[2] ||
-          draw[0] === draw[2]
-        ) {
-          const win = bet * 2;
-          balance += win;
-          slotResult.textContent = `Pair match. You won ${win}.`;
-          slotResult.style.color = "var(--ok)";
-        } else {
-          slotResult.textContent = "No match. Try again.";
-          slotResult.style.color = "";
-        }
-        slotBalance.textContent = String(balance);
-        if (balance <= 0) {
-          slotResult.textContent = "Balance zero. Reset page to restart.";
-        }
-      });
-
-      // Sudoku solver
-      const sudokuGrid = document.getElementById("sudokuGrid");
-      const sudokuStatus = document.getElementById("sudokuStatus");
-
-      function buildSudokuGrid() {
-        sudokuGrid.innerHTML = "";
-        for (let r = 0; r < 9; r++) {
-          const tr = document.createElement("tr");
-          for (let c = 0; c < 9; c++) {
-            const td = document.createElement("td");
-            const input = document.createElement("input");
-            input.maxLength = 1;
-            input.dataset.r = String(r);
-            input.dataset.c = String(c);
-            input.addEventListener("input", () => {
-              input.value = input.value.replace(/[^1-9]/g, "");
-            });
-            td.appendChild(input);
-            tr.appendChild(td);
-          }
-          sudokuGrid.appendChild(tr);
-        }
-      }
-
-      function readSudoku() {
-        const grid = Array.from({ length: 9 }, () => Array(9).fill(0));
-        sudokuGrid.querySelectorAll("input").forEach((inp) => {
-          const r = Number(inp.dataset.r);
-          const c = Number(inp.dataset.c);
-          grid[r][c] = Number(inp.value || 0);
-        });
-        return grid;
-      }
-
-      function writeSudoku(grid) {
-        sudokuGrid.querySelectorAll("input").forEach((inp) => {
-          const r = Number(inp.dataset.r);
-          const c = Number(inp.dataset.c);
-          inp.value = grid[r][c] ? String(grid[r][c]) : "";
+      function sRender() {
+        const box = document.getElementById("sudokuGrid"); box.innerHTML = "";
+        sBoard.forEach((v, i) => {
+           const el = document.createElement("div");
+           el.className = "sudoku-cell";
+           el.textContent = v || "";
+           if (sOrig[i]) el.style.color = "#000";
+           else if (v) el.style.color = "var(--accent-b)";
+           box.appendChild(el);
         });
       }
-
-      function valid(grid, row, col, val) {
-        for (let i = 0; i < 9; i++) {
-          if (grid[row][i] === val || grid[i][col] === val) return false;
-        }
-        const sr = Math.floor(row / 3) * 3;
-        const sc = Math.floor(col / 3) * 3;
-        for (let r = sr; r < sr + 3; r++) {
-          for (let c = sc; c < sc + 3; c++) {
-            if (grid[r][c] === val) return false;
-          }
-        }
+      function sCheck(b, r, c, v) {
+        for(let i=0; i<9; i++) if (b[r*9+i]===v || b[i*9+c]===v) return false;
+        let br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3;
+        for(let i=0; i<3; i++) for(let j=0; j<3; j++) if (b[(br+i)*9+(bc+j)]===v) return false;
         return true;
       }
-
-      function solveSudoku(grid) {
-        for (let r = 0; r < 9; r++) {
-          for (let c = 0; c < 9; c++) {
-            if (grid[r][c] === 0) {
-              for (let n = 1; n <= 9; n++) {
-                if (valid(grid, r, c, n)) {
-                  grid[r][c] = n;
-                  if (solveSudoku(grid)) return true;
-                  grid[r][c] = 0;
-                }
-              }
-              return false;
+      async function sAnimateSolve() {
+        document.getElementById("sudokuStatus").textContent = "Solving...";
+        const b = [...sBoard];
+        const empty = []; b.forEach((v,i) => { if (!v) empty.push(i); });
+        
+        async function solve(idx) {
+          if (idx === empty.length) return true;
+          const pos = empty[idx], r = Math.floor(pos/9), c = pos % 9;
+          for(let v=1; v<=9; v++) {
+            if (sCheck(b, r, c, v)) {
+               b[pos] = v; sBoard[pos] = v; sRender();
+               await new Promise(r => setTimeout(r, 20));
+               if (await solve(idx+1)) return true;
+               b[pos] = 0; sBoard[pos] = 0;
             }
           }
+          return false;
         }
-        return true;
+        if (await solve(0)) document.getElementById("sudokuStatus").textContent = "Solved!";
+        else document.getElementById("sudokuStatus").textContent = "No solution found.";
       }
-
-      document.getElementById("sudokuSolve").addEventListener("click", () => {
-        const g = readSudoku();
-        const ok = solveSudoku(g);
-        if (ok) {
-          writeSudoku(g);
-          sudokuStatus.textContent = "Solved.";
-          sudokuStatus.style.color = "var(--ok)";
-        } else {
-          sudokuStatus.textContent = "No valid solution found.";
-          sudokuStatus.style.color = "var(--bad)";
-        }
-      });
-
-      document.getElementById("sudokuClear").addEventListener("click", () => {
-        buildSudokuGrid();
-        sudokuStatus.textContent = "";
-      });
-
-      document.getElementById("sudokuDemo").addEventListener("click", () => {
-        const demo = [
-          [5, 3, 0, 0, 7, 0, 0, 0, 0],
-          [6, 0, 0, 1, 9, 5, 0, 0, 0],
-          [0, 9, 8, 0, 0, 0, 0, 6, 0],
-          [8, 0, 0, 0, 6, 0, 0, 0, 3],
-          [4, 0, 0, 8, 0, 3, 0, 0, 1],
-          [7, 0, 0, 0, 2, 0, 0, 0, 6],
-          [0, 6, 0, 0, 0, 0, 2, 8, 0],
-          [0, 0, 0, 4, 1, 9, 0, 0, 5],
-          [0, 0, 0, 0, 8, 0, 0, 7, 9],
-        ];
-        writeSudoku(demo);
-        sudokuStatus.textContent = "Demo puzzle loaded.";
-        sudokuStatus.style.color = "";
-      });
-
-      buildSudokuGrid();
+      document.getElementById("sudokuSolve").onclick = sAnimateSolve;
+      document.getElementById("sudokuNew").onclick = () => sInit(Math.floor(Math.random()*2));
+      document.getElementById("sudokuReset").onclick = () => { sBoard = [...sOrig]; sRender(); };
+      sInit(0);
     </script>
   </body>
 </html>
