@@ -297,7 +297,7 @@ class RentShareApp:
     def _update_summary(self, rent, food, units, charge, persons):
         lines = [
             "┌─────────────────────────────────────┐",
-            "│     FLAT EXPENSE RECEIPT             │",
+            "│     FLAT EXPENSE RECEIPT            │",
             "└─────────────────────────────────────┘",
             "",
             f"  Rent Amount              ₹ {rent:>10,.2f}",
