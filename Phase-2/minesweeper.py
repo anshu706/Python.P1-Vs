@@ -283,6 +283,4 @@ def play_gui(dim_size=10, num_bombs=10):
 
 
 if __name__ == '__main__':
-    # Uncomment the version you want to play:
-    play_gui()  # GUI version
-    # play()  # Console version
+    play_gui()
